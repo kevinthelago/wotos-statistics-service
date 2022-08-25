@@ -11,7 +11,7 @@ public interface StatisticsSnapshotsRepository extends JpaRepository<StatisticsS
 
     Optional<List<StatisticsSnapshot>> findAllStatisticsSnapshotsByPlayerId(int playerId);
 
-//    @Query(value = "SELECT total_battles FROM statistics_snapshots s WHERE player_id = ?1 AND tank_id = ?2 ORDER BY total_battles asc")
+//    @Query(value = "SELECT MAX(total_battles) FROM statistics_snapshots s WHERE s.player_id = ?1 AND s.tank_id = ?2")
     Optional<List<StatisticsSnapshot>> findByPlayerIdAndTankId(int playerId, int tankId);
 
 }

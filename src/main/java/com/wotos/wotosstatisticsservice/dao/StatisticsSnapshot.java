@@ -7,8 +7,8 @@ import javax.persistence.*;
 public class StatisticsSnapshot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "snapshot_id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "snapshot_id")
     private Integer snapshotId;
     @Column(name = "player_id", nullable = false)
     private Integer playerId;
