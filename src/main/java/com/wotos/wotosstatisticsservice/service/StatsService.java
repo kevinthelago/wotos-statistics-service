@@ -7,6 +7,7 @@ import com.wotos.wotosstatisticsservice.dto.TankStatistics;
 import com.wotos.wotosstatisticsservice.repo.StatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.util.CalculateStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +27,9 @@ public class StatsService {
     @Autowired
     private WotApiService wotApiService;
 
+    @Value("${env.snapshot_rate}")
+    private Integer SNAPSHOT_RATE;
+
     private final StatisticsSnapshotsRepository statisticsSnapshotsRepository;
 
     public StatsService(
@@ -38,31 +42,52 @@ public class StatsService {
     }
 
     public List<StatisticsSnapshot> getAllTankStatisticsByPlayerID(int playerId) {
-        Optional<List<StatisticsSnapshot>> tankStatisticsListFromDB = statisticsSnapshotsRepository.findAllStatisticsSnapshotsByPlayerId(playerId);
+//        Optional<List<StatisticsSnapshot>> tankStatisticsListFromDB = statisticsSnapshotsRepository.findAllStatisticsSnapshotsByPlayerId(playerId);
         List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerId);
+        List<StatisticsSnapshot> statisticsSnapshots = new ArrayList<>();
 
-        if (tankStatisticsListFromDB.isPresent()) {
-            tanksStatistics.forEach(tankStatistics -> {
-                Optional<StatisticsSnapshot> statisticsSnapshot = statisticsSnapshotsRepository.findByPlayerIdAndTankId(playerId, tankStatistics.getTankId());
+        tanksStatistics.forEach(tankStatistics -> {
+            Optional<List<StatisticsSnapshot>> statisticsSnapshotsFromDb = statisticsSnapshotsRepository.findByPlayerIdAndTankId(playerId, tankStatistics.getTankId());
 
-                if (statisticsSnapshot.isPresent()) {
+            if (statisticsSnapshotsFromDb.isPresent()) {
+                if (tankStatistics.getAll().getBattles() - statisticsSnapshotsFromDb.get().get(0).getTotalBattles() >= SNAPSHOT_RATE) {
+                    StatisticsSnapshot statisticsSnapshot = calculateStatistics.calculateTankStatisticsSnapshot(playerId, tankStatistics);
+                    statisticsSnapshots.add(statisticsSnapshot);
 
+                    statisticsSnapshotsRepository.save(statisticsSnapshot);
                 }
-            });
+            } else {
+                StatisticsSnapshot statisticsSnapshot = calculateStatistics.calculateTankStatisticsSnapshot(playerId, tankStatistics);
+                statisticsSnapshots.add(statisticsSnapshot);
 
-            return tankStatisticsListFromDB.get();
-            // check for updated statistics
-        } else {
-            List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerId);
-            List<StatisticsSnapshot> statisticsSnapshots = new ArrayList<>();
+                statisticsSnapshotsRepository.save(statisticsSnapshot);
+            }
+        });
 
-            assert tanksStatistics != null;
-            tanksStatistics.forEach(tankStatistics ->
-                    statisticsSnapshots.add(calculateStatistics.calculateTankStatisticsSnapshot(playerId, tankStatistics))
-            );
+        return statisticsSnapshots;
 
-            return statisticsSnapshots;
-        }
+//        if (tankStatisticsListFromDB.isPresent()) {
+//            tanksStatistics.forEach(tankStatistics -> {
+//                Optional<StatisticsSnapshot> statisticsSnapshot = statisticsSnapshotsRepository.findByPlayerIdAndTankId(playerId, tankStatistics.getTankId());
+//
+//                if (statisticsSnapshot.isPresent()) {
+////                    if difference in battle is more than n add tank snapshot
+//                }
+//            });
+//
+//            return tankStatisticsListFromDB.get();
+//            // check for updated statistics
+//        } else {
+////            List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerId);
+//            List<StatisticsSnapshot> statisticsSnapshots = new ArrayList<>();
+//
+//            assert tanksStatistics != null;
+//            tanksStatistics.forEach(tankStatistics ->
+//                    statisticsSnapshots.add(calculateStatistics.calculateTankStatisticsSnapshot(playerId, tankStatistics))
+//            );
+//
+//            return statisticsSnapshots;
+//        }
     }
 
     private List<StatisticsSnapshot> calculateAllTankStatisticsByPlayerID(int playerID) {

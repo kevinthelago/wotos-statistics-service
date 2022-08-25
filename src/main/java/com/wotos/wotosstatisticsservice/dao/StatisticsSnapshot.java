@@ -1,15 +1,13 @@
 package com.wotos.wotosstatisticsservice.dao;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(schema = "statistics_snapshots")
 public class StatisticsSnapshot {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "snapshot_id", nullable = false, unique = true)
     private Integer snapshotId;
     @Column(name = "player_id", nullable = false)
