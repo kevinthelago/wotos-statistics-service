@@ -1,23 +1,17 @@
 package com.wotos.wotosstatisticsservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wotos.wotosstatisticsservice.dao.ExpectedStatisticsRepository;
-import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsRepository;
-import com.wotos.wotosstatisticsservice.jsonao.TankStats;
-import com.wotos.wotosstatisticsservice.model.ExpectedStatistics;
-import com.wotos.wotosstatisticsservice.model.PlayerStatistics;
-import org.springframework.beans.factory.annotation.Value;
+import com.wotos.wotosstatisticsservice.dao.StatisticsSnapshot;
+import com.wotos.wotosstatisticsservice.dto.TankStatistics;
+import com.wotos.wotosstatisticsservice.repo.StatisticsSnapshotsRepository;
+import com.wotos.wotosstatisticsservice.util.CalculateStatistics;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StatsService {
@@ -25,101 +19,101 @@ public class StatsService {
     private final ObjectMapper mapper = new ObjectMapper();
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders httpHeaders = new HttpHeaders();
+    private final Map<String, String> queryParameters = new HashMap<>();
 
-    private final PlayerStatisticsRepository playerStatisticsRepository;
-    private final ExpectedStatisticsRepository expectedStatisticsRepository;
+    @Autowired
+    private CalculateStatistics calculateStatistics;
+    @Autowired
+    private WotApiService wotApiService;
 
-    @Value("${env.app_id}")
-    private String APP_ID;
-    private final String EXPECTED_STATISTICS_URI = "https://static.modxvm.com/wn8-data-exp/json/wn8exp.json";
-    private String PLAYER_STATISTICS_BY_TANK = "https://api.worldoftanks.com/wot/tanks/stats/?application_id=";
+    private final StatisticsSnapshotsRepository statisticsSnapshotsRepository;
 
     public StatsService(
-            PlayerStatisticsRepository playerStatisticsRepository,
-            ExpectedStatisticsRepository expectedStatisticsRepository
-    ) {
-        this.playerStatisticsRepository = playerStatisticsRepository;
-        this.expectedStatisticsRepository = expectedStatisticsRepository;
+            StatisticsSnapshotsRepository statisticsSnapshotsRepository
+            ) {
+        this.statisticsSnapshotsRepository = statisticsSnapshotsRepository;
         mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true
         );
-        httpHeaders.add("Language", "");
-        initializeExpectedStatistics();
     }
 
-    public Optional<PlayerStatistics> getPlayerStatistics(int playerID) {
-        Optional<PlayerStatistics> playerStatistics = playerStatisticsRepository.findById(playerID);
+    public List<StatisticsSnapshot> getAllTankStatisticsByPlayerID(int playerId) {
+        Optional<List<StatisticsSnapshot>> tankStatisticsListFromDB = statisticsSnapshotsRepository.findAllStatisticsSnapshotsByPlayerId(playerId);
+        List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerId);
 
-        if (playerStatistics.isPresent()) {
-            // Check for statistics age and add new/current stats to db
-            return playerStatisticsRepository.findById(playerID);
+        if (tankStatisticsListFromDB.isPresent()) {
+            tanksStatistics.forEach(tankStatistics -> {
+                Optional<StatisticsSnapshot> statisticsSnapshot = statisticsSnapshotsRepository.findByPlayerIdAndTankId(playerId, tankStatistics.getTankId());
+
+                if (statisticsSnapshot.isPresent()) {
+
+                }
+            });
+
+            return tankStatisticsListFromDB.get();
+            // check for updated statistics
         } else {
-            fetchPlayerStatisticsByTank(playerID);
-            return calculatePlayerStatistics(playerID);
-        }
+            List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerId);
+            List<StatisticsSnapshot> statisticsSnapshots = new ArrayList<>();
 
-    }
+            assert tanksStatistics != null;
+            tanksStatistics.forEach(tankStatistics ->
+                    statisticsSnapshots.add(calculateStatistics.calculateTankStatisticsSnapshot(playerId, tankStatistics))
+            );
 
-    private Optional<PlayerStatistics> calculatePlayerStatistics(int playerID) {
-        return null;
-    }
-
-    private List<TankStats> fetchPlayerStatisticsByTank(int playerID) {
-        String result = restTemplate.getForObject(PLAYER_STATISTICS_BY_TANK + APP_ID + "&account_id=" + playerID, String.class);
-        List<TankStats> tankStats = new ArrayList<>();
-
-        try {
-            JsonNode data = mapper.readTree(result).get("data").get(String.valueOf(playerID));
-
-            data.forEach(value -> {
-                try {
-                    tankStats.add(mapper.treeToValue(value, TankStats.class));
-                } catch (JsonProcessingException e) {
-                    System.out.println("Error processing tank statistics JSON: " + e.getMessage());
-                }
-            });
-
-            return tankStats;
-        } catch (IOException e) {
-            System.out.println("Error parsing fetched player data: " + e.getMessage());
-            return null;
+            return statisticsSnapshots;
         }
     }
 
-    public List<ExpectedStatistics> fetchExpectedStatistics() {
+    private List<StatisticsSnapshot> calculateAllTankStatisticsByPlayerID(int playerID) {
+        List<TankStatistics> tanksStatistics = wotApiService.fetchAllTankStatisticsByPlayerID(playerID);
+        List<StatisticsSnapshot> statisticsSnapshots = new ArrayList<>();
 
-        String result = restTemplate.getForObject(EXPECTED_STATISTICS_URI, String.class);
-        List<ExpectedStatistics> expectedStatistics = new ArrayList<>();
+        assert tanksStatistics != null;
+        tanksStatistics.forEach(tankStatistics ->
+            statisticsSnapshots.add(calculateStatistics.calculateTankStatisticsSnapshot(playerID, tankStatistics))
+        );
 
-        try {
-            JsonNode data = mapper.readTree(result).get("data");
-
-            data.forEach(value -> {
-                try {
-                    ExpectedStatistics expectedStatistic = mapper.treeToValue(value, ExpectedStatistics.class);
-                    expectedStatistic.setIDNum(value.get("IDNum").asInt());
-                    expectedStatistics.add(expectedStatistic);
-                } catch (JsonProcessingException e) {
-                    System.out.println("Error fetching Expected Statistics values: " + e.getMessage());
-                }
-            });
-
-            return expectedStatistics;
-        } catch(IOException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-
+        return statisticsSnapshots;
     }
 
-    private void initializeExpectedStatistics() {
-        if (expectedStatisticsRepository.findAll().size() == 0) {
-            expectedStatisticsRepository.saveAll(fetchExpectedStatistics());
-        }
-    }
+    /*
+    * SINGLE TANK todo
+    *              check for updates
+    * */
 
-    private void updateExpectedStatistics(List<ExpectedStatistics> newExpectedStatistics) {
+//    public ResponseEntity<TankStatistics> getTankStatisticsByPlayerID(int playerID, int tankID) {
+//        Optional<TankStatistics> tankStatisticsFromDB = tankStatisticsRepository.findTankStatisticsByPlayerAndTankID(playerID, tankID);
+//
+//        if (tankStatisticsFromDB.isPresent()) {
+//            // check for updated statistics
+//
+//            return new ResponseEntity(tankStatisticsFromDB.get(), httpHeaders, HttpStatus.FOUND);
+//        } else {
+//            TankStatistics tankStatistics = calculateStatistics.calculateTankStatistics(playerID, fetchTankStatisticsByPlayerAndTankID(playerID, tankID));
+//
+//            return new ResponseEntity(tankStatistics, httpHeaders, HttpStatus.CREATED);
+//        }
+//    }
 
-    }
+    /*
+    * PLAYER STATISTICS todo
+    *                    check for updates
+    *                    create new player stats if not found
+    * */
+
+//    public ResponseEntity<PlayerStatistics> getAveragePlayerStatistics(int playerID) {
+//        Optional<PlayerStatistics> playerStatistics = playerStatisticsRepository.findById(playerID);
+//
+//        if (playerStatistics.isPresent()) {
+//            // asynchronously update player statistics
+//
+//            return new ResponseEntity(playerStatistics.get(), httpHeaders, HttpStatus.OK);
+//        } else {
+//            // create new PlayerStatistics
+//
+//            return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
+//        }
+//    }
 
 }
