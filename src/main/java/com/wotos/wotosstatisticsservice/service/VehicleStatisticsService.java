@@ -9,6 +9,7 @@ import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepositor
 import com.wotos.wotosstatisticsservice.util.feign.WotAccountsFeignClient;
 import com.wotos.wotosstatisticsservice.util.feign.WotPlayerVehiclesFeignClient;
 import com.wotos.wotosstatisticsservice.util.feign.XvmExpectedStatisticsFeignClient;
+import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatisticsByGameMode;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotVehicleStatistics;
 import com.wotos.wotosstatisticsservice.util.model.xvm.XvmExpectedStatistics;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
@@ -33,6 +35,16 @@ public class VehicleStatisticsService {
     private final VehicleStatisticsSnapshotsRepository vehicleStatisticsSnapshotsRepository;
     private final ExpectedStatisticsRepository expectedStatisticsRepository;
 
+    @PostConstruct
+    public void init() {
+        List<ExpectedStatistics> expectedStatistics = expectedStatisticsRepository.findAll();
+
+        // ToDo: Validate Expected Statistics is current/hasn't changed
+        if (expectedStatistics.size() == 0) {
+            initExpectedStatistics();
+        }
+    }
+
     public VehicleStatisticsService(
             WotPlayerVehiclesFeignClient wotPlayerVehiclesFeignClient,
             XvmExpectedStatisticsFeignClient xvmExpectedStatisticsFeignClient,
@@ -47,42 +59,54 @@ public class VehicleStatisticsService {
         this.expectedStatisticsRepository = expectedStatisticsRepository;
     }
 
-    // ToDo: Simplify
-    public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(List<Integer> accountIds, List<Integer> vehicleIds) {
+    public ResponseEntity<?> getPlayerVehicleStatisticsSnapshots(
+            @NotNull List<Integer> accountIds, List<Integer> vehicleIds
+    ) {
         Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> vehicleStatisticsSnapshotsByPlayer = new HashMap<>();
 
         for (Integer accountId : accountIds) {
             List<WotVehicleStatistics> wotVehicleStatisticsList = fetchVehicleStatistics(accountId, "", "", "", null, "", vehicleIds);
             Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMap = new HashMap<>();
 
-            for (WotVehicleStatistics wotVehicleStatistics : wotVehicleStatisticsList) {
-                Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = generateVehicleStatisticsByGameModeMap(wotVehicleStatistics);
-                Map<String, List<VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsByGameModeMap = new HashMap<>();
-                Integer vehicleId = wotVehicleStatistics.getVehicleId();
+            try {
+                for (WotVehicleStatistics wotVehicleStatistics : wotVehicleStatisticsList) {
+                    Integer vehicleId = wotVehicleStatistics.getVehicleId();
 
-                wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
-                    Integer maxBattles = vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(accountId, vehicleId, gameMode).orElse(0);
-
-                    // ToDo: Maybe implement initial save for vehicles with battles less than snapshot_rate
-                    if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
-                        ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
-
-                        vehicleStatisticsSnapshotsRepository.save(calculateVehicleStatisticsSnapshot(
-                                accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
-                        ));
-                    }
-
-                    List<VehicleStatisticsSnapshot> vehicleStatisticsSnapshotList = vehicleStatisticsSnapshotsRepository.findByAccountIdAndVehicleIdAndGameMode(accountId, vehicleId, gameMode).orElse(new ArrayList<>());
-                    vehicleStatisticsSnapshotsByGameModeMap.put(gameMode, vehicleStatisticsSnapshotList);
-                });
-
-                vehicleStatisticsSnapshotsMap.put(vehicleId, vehicleStatisticsSnapshotsByGameModeMap);
+                    vehicleStatisticsSnapshotsMap.put(vehicleId, mapVehicleStatisticsSnapshotsByGameMode(accountId, vehicleId, wotVehicleStatistics));
+                }
+            } catch (NullPointerException e) {
+                System.out.println("No Statistics Found with accountId: " + accountId + "\n" + e.getMessage());
             }
 
             vehicleStatisticsSnapshotsByPlayer.put(accountId, vehicleStatisticsSnapshotsMap);
         }
 
         return new ResponseEntity<>(vehicleStatisticsSnapshotsByPlayer, HttpStatus.OK);
+    }
+
+    private Map<String, List<VehicleStatisticsSnapshot>> mapVehicleStatisticsSnapshotsByGameMode(
+            Integer accountId, Integer vehicleId, WotVehicleStatistics wotVehicleStatistics
+    ) {
+        Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = generateVehicleStatisticsByGameModeMap(wotVehicleStatistics);
+        Map<String, List<VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsByGameModeMap = new HashMap<>();
+
+        wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
+            Integer maxBattles = vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(accountId, vehicleId, gameMode).orElse(0);
+
+            // ToDo: Maybe implement initial save for vehicles with battles less than snapshot_rate
+            if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
+                ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
+
+                vehicleStatisticsSnapshotsRepository.save(calculateVehicleStatisticsSnapshot(
+                        accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
+                ));
+            }
+
+            List<VehicleStatisticsSnapshot> vehicleStatisticsSnapshotList = vehicleStatisticsSnapshotsRepository.findByAccountIdAndVehicleIdAndGameMode(accountId, vehicleId, gameMode).orElse(new ArrayList<>());
+            vehicleStatisticsSnapshotsByGameModeMap.put(gameMode, vehicleStatisticsSnapshotList);
+        });
+
+        return vehicleStatisticsSnapshotsByGameModeMap;
     }
 
     private static Map<String, WotStatisticsByGameMode> generateVehicleStatisticsByGameModeMap(WotVehicleStatistics wotVehicleStatistics) {
