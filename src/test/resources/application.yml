@@ -1,0 +1,30 @@
+
+spring:
+  cloud:
+    discovery:
+      enabled: false
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: jdbc:mysql://localhost:3306/wotos_statistics_test?useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+javax:
+  persistence:
+    schema-generation:
+      scripts:
+        action: create
+
+env:
+  snapshot_rate: 50
+  test_wot_account_id: 1004866884
+  test_wot_tank_id: 8193
+
+urls:
+  wot_tank_statistics: https://api.worldoftanks.com/wot/tanks/stats/?application_id=da67d6dbc1f23b9e54688febe7d5da56
+  expected_statistics: https://static.modxvm.com/wn8-data-exp/json/wn8exp.json
