@@ -18,7 +18,7 @@ public class VehicleStatisticsController {
     VehicleStatisticsService vehicleStatisticsService;
 
     @GetMapping("/vehicles")
-    public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatistics(
+    public ResponseEntity<?> getPlayerVehicleStatisticsSnapshots(
             @RequestParam("accountIds") List<Integer> accountIds,
             @RequestParam("vehicleIds") List<Integer> vehicleIds
     ) {
