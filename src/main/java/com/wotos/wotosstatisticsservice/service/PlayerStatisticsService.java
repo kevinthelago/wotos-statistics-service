@@ -60,7 +60,7 @@ public class PlayerStatisticsService {
                 Float totalAverageWn8 = vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(accountId, gameMode).orElse(0f);
 
                 if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
-                    playerStatisticsSnapshotsRepository.save(calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotPlayerDetails));
+                    playerStatisticsSnapshotsRepository.save(calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotStatisticsByGameMode));
                 }
 
                 List<PlayerStatisticsSnapshot> playerStatisticsSnapshots = playerStatisticsSnapshotsRepository.findByAccountIdAndGameMode(
@@ -94,21 +94,21 @@ public class PlayerStatisticsService {
 
     private static PlayerStatisticsSnapshot calculatePlayerStatisticsSnapshot(
             @NotNull Integer accountId, @NotNull String gameMode, @NotNull Float totalAverageWn8,
-            @NotNull WotPlayerDetails wotPlayerDetails
+            @NotNull WotStatisticsByGameMode wotStatisticsByGameMode
     ) {
-        float wins = wotPlayerDetails.getStatistics().getAll().getWins();
-        float battles = wotPlayerDetails.getStatistics().getAll().getBattles();
-        float survivedBattles = wotPlayerDetails.getStatistics().getAll().getSurvivedBattles();
-        float frags = wotPlayerDetails.getStatistics().getAll().getFrags();
-        float spotted = wotPlayerDetails.getStatistics().getAll().getSpotted();
-        float damage = wotPlayerDetails.getStatistics().getAll().getDamageDealt();
-        float damageTaken = wotPlayerDetails.getStatistics().getAll().getDamageReceived();
-        float dropperCapturePoints = wotPlayerDetails.getStatistics().getAll().getDroppedCapturePoints();
-        float xp = wotPlayerDetails.getStatistics().getAll().getXp();
-        float hits = wotPlayerDetails.getStatistics().getAll().getHits();
-        float shots = wotPlayerDetails.getStatistics().getAll().getShots();
-        float stunAssistedDamage = wotPlayerDetails.getStatistics().getAll().getStunAssistedDamage();
-        float capturePoints = wotPlayerDetails.getStatistics().getAll().getCapturePoints();
+        float wins = wotStatisticsByGameMode.getWins();
+        float battles = wotStatisticsByGameMode.getBattles();
+        float survivedBattles = wotStatisticsByGameMode.getSurvivedBattles();
+        float frags = wotStatisticsByGameMode.getFrags();
+        float spotted = wotStatisticsByGameMode.getSpotted();
+        float damage = wotStatisticsByGameMode.getDamageDealt();
+        float damageTaken = wotStatisticsByGameMode.getDamageReceived();
+        float dropperCapturePoints = wotStatisticsByGameMode.getDroppedCapturePoints();
+        float xp = wotStatisticsByGameMode.getXp();
+        float hits = wotStatisticsByGameMode.getHits();
+        float shots = wotStatisticsByGameMode.getShots();
+        float stunAssistedDamage = wotStatisticsByGameMode.getStunAssistedDamage();
+        float capturePoints = wotStatisticsByGameMode.getCapturePoints();
 
         float winLossRatio = wins / battles;
         float deaths = battles - survivedBattles == 0 ? 1 : battles - survivedBattles;

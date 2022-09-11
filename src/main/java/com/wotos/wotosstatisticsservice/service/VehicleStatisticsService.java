@@ -35,7 +35,7 @@ public class VehicleStatisticsService {
     private final VehicleStatisticsSnapshotsRepository vehicleStatisticsSnapshotsRepository;
     private final ExpectedStatisticsRepository expectedStatisticsRepository;
 
-    @PostConstruct
+//    @PostConstruct
     public void init() {
         List<ExpectedStatistics> expectedStatistics = expectedStatisticsRepository.findAll();
 
@@ -59,7 +59,7 @@ public class VehicleStatisticsService {
         this.expectedStatisticsRepository = expectedStatisticsRepository;
     }
 
-    public ResponseEntity<?> getPlayerVehicleStatisticsSnapshots(
+    public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
             @NotNull List<Integer> accountIds, List<Integer> vehicleIds
     ) {
         Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> vehicleStatisticsSnapshotsByPlayer = new HashMap<>();

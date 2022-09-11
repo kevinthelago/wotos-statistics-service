@@ -1,28 +1,27 @@
-
-#spring:
-#  cloud:
-#    discovery:
-#      enabled: false
-#  jpa:
-#    show-sql: true
-#    generate-ddl: true
-#    hibernate:
-#      ddl-auto: create
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/wotos_statistics_test_database?useSSL=false
-#    username: root
-#    password: root
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-
-#javax:
-#  persistence:
-#    schema-generation:
-#      scripts:
-#        action: create
+spring:
+#  autoconfigure:
+#    exclude:
+#      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration, \
+#      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration, \
+#      org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+  cloud:
+    discovery:
+      enabled: false
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  datasource:
+    url: jdbc:mysql://localhost:3306/wotos_statistics_test_database?useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 env:
-  snapshot_rate: 50
-
-urls:
-  wot_tank_statistics: https://api.worldoftanks.com/wot/tanks/stats/?application_id=da67d6dbc1f23b9e54688febe7d5da56
-  expected_statistics: https://static.modxvm.com/wn8-data-exp/json/wn8exp.json
+  app_id: ""
+  snapshot_rate: 0
+  urls:
+    world_of_tanks_api: ""
+    xvm_expected_statistics: ""
