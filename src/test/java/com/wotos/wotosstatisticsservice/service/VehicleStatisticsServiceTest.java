@@ -116,7 +116,9 @@ public class VehicleStatisticsServiceTest {
 
         List<Integer> accountIds = new ArrayList<>();
         accountIds.add(1);
-        vehicleStatisticsService.getPlayerVehicleStatisticsSnapshots(accountIds, tankIdList);
+        List<String> gameModes = new ArrayList<>();
+        gameModes.add("all");
+        vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, tankIdList, gameModes);
 
         when(vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot1)).thenReturn(vehicleStatisticsSnapshot1);
         when(vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot2)).thenReturn(vehicleStatisticsSnapshot2);

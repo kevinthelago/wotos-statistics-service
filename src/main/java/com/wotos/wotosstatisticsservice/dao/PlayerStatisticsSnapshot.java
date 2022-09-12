@@ -15,8 +15,8 @@ public class PlayerStatisticsSnapshot {
     private Integer accountId;
     @Column(name = "game_mode", nullable = false)
     private String gameMode;
-    @Column(name = "create_date", nullable = false)
-    private Date createDate;
+    @Column(name = "create_timestamp", nullable = false)
+    private Long createTimestamp;
     @Column(name = "total_battles", nullable = false)
     private Integer totalBattles;
     @Column(name = "survived_battles", nullable = false)
@@ -72,12 +72,12 @@ public class PlayerStatisticsSnapshot {
         this.gameMode = gameMode;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public Long getCreateTimestamp() {
+        return createTimestamp;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
+    public void setCreateTimestamp(Long createTimestamp) {
+        this.createTimestamp = createTimestamp;
     }
 
     public Integer getTotalBattles() {

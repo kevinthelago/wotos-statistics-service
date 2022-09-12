@@ -23,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.persistence.Column;
+import java.time.Instant;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -48,16 +50,16 @@ public class PlayerStatisticsServiceTest {
     @MockBean
     private WotPlayerVehiclesFeignClient wotPlayerVehiclesFeignClient;
 
-    // ToDo: Make env variables better
-    @Value("${env.snapshot_rate}")
-    private Integer SNAPSHOT_RATE;
-    @Value("${env.app_id}")
-    private String APP_ID;
+//    // ToDo: Make env variables better
+//    @Value("${env.snapshot_rate}")
+//    private Integer SNAPSHOT_RATE;
+//    @Value("${env.app_id}")
+//    private String APP_ID;
 
     @Before
     public void setUp() {
-        ReflectionTestUtils.setField(playerStatisticsService, "SNAPSHOT_RATE", SNAPSHOT_RATE);
-        ReflectionTestUtils.setField(playerStatisticsService, "APP_ID", APP_ID);
+        ReflectionTestUtils.setField(playerStatisticsService, "SNAPSHOT_RATE", 10);
+        ReflectionTestUtils.setField(playerStatisticsService, "APP_ID", "");
     }
 
     @Test
@@ -77,7 +79,7 @@ public class PlayerStatisticsServiceTest {
         when(playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(1, "all")).thenReturn(maxBattles);
 
         List<PlayerStatisticsSnapshot> playerStatisticsSnapshotsList = new ArrayList<>();
-        PlayerStatisticsSnapshot playerStatisticsSnapshot = buildRandomPlayerStatisticsSnapshot(1);
+        PlayerStatisticsSnapshot playerStatisticsSnapshot = buildPlayerStatisticsSnapshot(1);
         playerStatisticsSnapshotsList.add(playerStatisticsSnapshot);
         when(playerStatisticsSnapshotsRepository.save(any(PlayerStatisticsSnapshot.class))).thenReturn(playerStatisticsSnapshot);
 
@@ -85,32 +87,34 @@ public class PlayerStatisticsServiceTest {
 
         List<Integer> accountIds = new ArrayList<>();
         accountIds.add(1);
-        playerStatisticsService.getPlayerStatisticsSnapshots(accountIds);
+        List<String> gameModes = new ArrayList<>();
+        gameModes.add("all");
+        playerStatisticsService.getPlayerStatisticsSnapshotsMap(accountIds, gameModes);
 
-//        verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountId(1);
-//        verify(playerStatisticsSnapshotsRepository, times(1)).save(any(PlayerStatisticsSnapshot.class));
-//        verify(playerStatisticsSnapshotsRepository, times(1)).findByAccountId(1);
+        verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
+        verify(playerStatisticsSnapshotsRepository, times(1)).save(any(PlayerStatisticsSnapshot.class));
+        verify(playerStatisticsSnapshotsRepository, times(1)).findByAccountIdAndGameMode(1, "all");
     }
 
     private WotPlayerDetails buildRandomPlayerDetails(Integer accountId, Integer battles) {
         return new WotPlayerDetails(
-                "", 0, 0,0,
+                "", 0, accountId,0,
                 0,false,0,0,
-                buildRandomPlayerStatistics(battles), "", 0
+                buildPlayerStatistics(battles), "", 0
         );
     }
 
-    private WotPlayerStatistics buildRandomPlayerStatistics(Integer battles) {
+    private WotPlayerStatistics buildPlayerStatistics(Integer battles) {
         return new WotPlayerStatistics(
-                null,
+                buildRandomStatisticsByGameMode(0),
                 buildRandomStatisticsByGameMode(battles),
-                null,
+                buildRandomStatisticsByGameMode(0),
                 0,
-                null,
-                null,
-                null,
-                null,
-                null,
+                buildRandomStatisticsByGameMode(0),
+                buildRandomStatisticsByGameMode(0),
+                buildRandomStatisticsByGameMode(0),
+                buildRandomStatisticsByGameMode(0),
+                buildRandomStatisticsByGameMode(0),
                 0
         );
     }
@@ -123,11 +127,13 @@ public class PlayerStatisticsServiceTest {
         );
     }
 
-    private PlayerStatisticsSnapshot buildRandomPlayerStatisticsSnapshot(Integer accountId) {
+    private PlayerStatisticsSnapshot buildPlayerStatisticsSnapshot(Integer accountId) {
         PlayerStatisticsSnapshot playerStatisticsSnapshot = new PlayerStatisticsSnapshot();
 
         playerStatisticsSnapshot.setPlayerStatisticsSnapshotId(0);
         playerStatisticsSnapshot.setAccountId(accountId);
+        playerStatisticsSnapshot.setGameMode("all");
+        playerStatisticsSnapshot.setCreateTimestamp(Instant.now().getEpochSecond());
         playerStatisticsSnapshot.setTotalBattles(0);
         playerStatisticsSnapshot.setSurvivedBattles(0);
         playerStatisticsSnapshot.setKillDeathRatio(0.0f);

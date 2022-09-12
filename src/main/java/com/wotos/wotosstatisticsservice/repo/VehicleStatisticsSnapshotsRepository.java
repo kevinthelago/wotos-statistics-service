@@ -4,6 +4,8 @@ import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +21,8 @@ public interface VehicleStatisticsSnapshotsRepository extends JpaRepository<Vehi
     // ToDo: Validate this query is returning correct values
     @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = ?1 AND game_mode = ?2", nativeQuery = true)
     Optional<Float> averageAverageWn8ByGameModeAndAccountId(Integer accountId, String gameMode);
+
+    @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = ?1 AND game_mode = ?2 AND create_timestamp > ?3", nativeQuery = true)
+    Optional<Float> averageRecentAverageWn8ByGameModeAndAccountId(Integer accountId, String gameMode, Long timestamp);
 
 }
