@@ -59,7 +59,7 @@ public class WotStatisticsByGameMode {
     @JsonProperty("tanking_factor")
     private final Float tankingFactor;
     @JsonProperty("avg_damage_blocked")
-    private final Integer averageDamageBlocked;
+    private final Float averageDamageBlocked;
 
     public WotStatisticsByGameMode(
             Integer spotted, Integer battles, Integer wins, Integer draws,
@@ -72,7 +72,7 @@ public class WotStatisticsByGameMode {
             Float averageDamageAssisted, Float averageDamageAssistedTrack,
             Float averageDamageAssistedRadio, Integer maxDamage, Integer averageXp,
             Integer damageDealt, Integer maxFrags, Float tankingFactor,
-            Integer averageDamageBlocked
+            Float averageDamageBlocked
     ) {
         this.spotted = spotted;
         this.battles = battles;
@@ -237,7 +237,7 @@ public class WotStatisticsByGameMode {
         return tankingFactor;
     }
 
-    public Integer getAverageDamageBlocked() {
+    public Float getAverageDamageBlocked() {
         return averageDamageBlocked;
     }
 }

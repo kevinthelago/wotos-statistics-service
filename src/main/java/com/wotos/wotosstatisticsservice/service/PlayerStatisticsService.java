@@ -83,20 +83,30 @@ public class PlayerStatisticsService {
         return playerStatisticsSnapshotsMapByAccountIdsAndGameMode;
     }
 
-    public void createPlayerStatisticsSnapshotsByAccountIds(List<Integer> accountIds) {
+    public Map<Integer, Map<String, PlayerStatisticsSnapshot>> createPlayerStatisticsSnapshotsByAccountIds(List<Integer> accountIds) {
+        Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = new HashMap<>();
+
         for (Integer accountId : accountIds) {
             WotPlayerDetails wotPlayerDetails = fetchWotPlayerDetails(accountId);
             Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = buildWotStatisticsByGameModeMap(wotPlayerDetails.getStatistics());
+            Map<String, PlayerStatisticsSnapshot> playerStatisticsSnapshotsMapByGameMode = new HashMap<>();
 
             wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
                 Integer maxBattles = playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(accountId, gameMode).orElse(0);
                 Float totalAverageWn8 = vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(accountId, gameMode).orElse(0f);
 
                 if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
-                    playerStatisticsSnapshotsRepository.save(calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotStatisticsByGameMode));
+                    PlayerStatisticsSnapshot playerStatisticsSnapshot = calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotStatisticsByGameMode);
+
+                    playerStatisticsSnapshotsMapByGameMode.put(gameMode, playerStatisticsSnapshot);
+                    playerStatisticsSnapshotsRepository.save(playerStatisticsSnapshot);
                 }
             });
+
+            playerStatisticsSnapshotsMap.put(accountId, playerStatisticsSnapshotsMapByGameMode);
         }
+
+        return playerStatisticsSnapshotsMap;
     }
 
     private static Map<String, WotStatisticsByGameMode> buildWotStatisticsByGameModeMap(WotPlayerStatistics wotPlayerStatistics) {

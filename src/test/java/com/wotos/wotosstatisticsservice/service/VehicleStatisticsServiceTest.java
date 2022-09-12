@@ -68,6 +68,11 @@ public class VehicleStatisticsServiceTest {
     }
 
     @Test
+    public void createPlayerVehicleStatisticsSnapshotsTest() {
+
+    }
+
+    @Test
     public void getPlayerVehicleStatisticsSnapshotsTest() {
         // ToDo: Assure calculations are correct rather than building with random values
         Map<Integer, List<WotVehicleStatistics>> vehicleStatisticsMap = new HashMap<>();
@@ -175,7 +180,7 @@ public class VehicleStatisticsServiceTest {
         return new WotStatisticsByGameMode(
                 0,battles, 0,0,0,0,0,0,0,0,0,0,0,0,
                 0,0,0,0,0,0,0,0,0,0,
-                0f,0f,0f,0,0,0,0,0f,0
+                0f,0f,0f,0,0,0,0,0f,0f
         );
     }
 
