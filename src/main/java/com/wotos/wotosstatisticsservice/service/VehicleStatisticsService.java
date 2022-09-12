@@ -83,12 +83,16 @@ public class VehicleStatisticsService {
         return playerVehicleStatisticsSnapshotsMapByAccountIdsAndVehicleIdAndGameMode;
     }
 
-    public void createPlayerVehicleStatisticsSnapshots(List<Integer> accountIds, List<Integer> vehicleIds) {
+    public Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> createPlayerVehicleStatisticsSnapshots(List<Integer> accountIds, List<Integer> vehicleIds) {
+        Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMapByPlayer = new HashMap<>();
+
         for (Integer accountId : accountIds) {
             List<WotVehicleStatistics> wotVehicleStatisticsList = fetchWotVehicleStatistics(accountId, "", "", "", null, "", vehicleIds);
+            Map<Integer, Map<String, VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsMapByVehicle = new HashMap<>();
 
             for (WotVehicleStatistics wotVehicleStatistics : wotVehicleStatisticsList) {
                 Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = generateVehicleStatisticsByGameModeMap(wotVehicleStatistics);
+                Map<String, VehicleStatisticsSnapshot> vehicleStatisticsSnapshotsByGameMode = new HashMap<>();
                 Integer vehicleId = wotVehicleStatistics.getVehicleId();
 
                 wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
@@ -96,14 +100,22 @@ public class VehicleStatisticsService {
 
                     if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
                         ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
-
-                        vehicleStatisticsSnapshotsRepository.save(calculateVehicleStatisticsSnapshot(
+                        VehicleStatisticsSnapshot vehicleStatisticsSnapshot = calculateVehicleStatisticsSnapshot(
                                 accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
-                        ));
+                        );
+
+                        vehicleStatisticsSnapshotsByGameMode.put(gameMode, vehicleStatisticsSnapshot);
+                        vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot);
                     }
                 });
+
+                vehicleStatisticsSnapshotsMapByVehicle.put(vehicleId, vehicleStatisticsSnapshotsByGameMode);
             }
+
+            vehicleStatisticsSnapshotsMapByPlayer.put(accountId, vehicleStatisticsSnapshotsMapByVehicle);
         }
+
+        return vehicleStatisticsSnapshotsMapByPlayer;
     }
 
     private static Map<String, WotStatisticsByGameMode> generateVehicleStatisticsByGameModeMap(WotVehicleStatistics wotVehicleStatistics) {
