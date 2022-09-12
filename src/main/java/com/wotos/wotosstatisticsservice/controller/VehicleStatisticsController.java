@@ -3,6 +3,7 @@ package com.wotos.wotosstatisticsservice.controller;
 import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.service.VehicleStatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +19,21 @@ public class VehicleStatisticsController {
 
     @GetMapping("/vehicles")
     public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
-            @RequestParam("accountIds") List<Integer> accountIds,
-            @RequestParam("vehicleIds") List<Integer> vehicleIds
+            @RequestParam(value = "accountIds") List<Integer> accountIds,
+            @RequestParam(value = "vehicleIds") List<Integer> vehicleIds,
+            @RequestParam(value = "gameModes") List<String> gameModes
     ) {
-        return vehicleStatisticsService.getPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
+        return new ResponseEntity<>(vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, vehicleIds, gameModes), HttpStatus.OK);
+    }
+
+    @PostMapping("/vehicles")
+    public ResponseEntity<HttpStatus> createPlayerVehicleStatisticsSnapshots(
+            @RequestParam(value = "accountIds") List<Integer> accountIds,
+            @RequestParam(value = "vehicleIds", required = false) List<Integer> vehicleIds
+    ) {
+        vehicleStatisticsService.createPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

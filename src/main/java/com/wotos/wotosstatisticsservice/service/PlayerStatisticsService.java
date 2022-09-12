@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -43,18 +45,49 @@ public class PlayerStatisticsService {
         this.playerStatisticsSnapshotsRepository = playerStatisticsSnapshotsRepository;
     }
 
-    // ToDo: Simplify
-    public ResponseEntity<Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>>> getPlayerStatisticsSnapshots(List<Integer> accountIds) {
-        // ToDo: Calculate recent wn8
-        Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> playerStatisticsSnapshotsMapByGameMode = new HashMap<>();
+    public Map<Integer, Map<String, Float>> getPlayerRecentAverageWn8Map(List<Integer> accountIds, List<String> gameModes, Long timestamp) {
+        Map<Integer, Map<String, Float>> playerRecentAverageWn8MapByAccountIdAndGameMode = new HashMap<>();
 
         for (Integer accountId : accountIds) {
-            WotPlayerDetails wotPlayerDetails = fetchPlayerDetails(accountId);
-            Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = generatePlayerStatisticsByGameModeMap(wotPlayerDetails.getStatistics());
-            Map<String, List<PlayerStatisticsSnapshot>> playerStatisticsByGameModeMap = new HashMap<>();
+            Map<String, Float> playerRecentAverageWn8MapByGameMode = new HashMap<>();
 
-            // ToDo: Maybe implement initial save for players with battles < SNAPSHOT_RATE
-            // ToDo: Figure out the discrepancy between player game mode map and vehicle game mode map.
+            for (String gameMode : gameModes) {
+                Float recentAverageWn8 = vehicleStatisticsSnapshotsRepository.averageRecentAverageWn8ByGameModeAndAccountId(accountId, gameMode, timestamp).orElse(0f);
+
+                playerRecentAverageWn8MapByGameMode.put(gameMode, recentAverageWn8);
+            }
+
+            playerRecentAverageWn8MapByAccountIdAndGameMode.put(accountId, playerRecentAverageWn8MapByGameMode);
+        }
+
+        return playerRecentAverageWn8MapByAccountIdAndGameMode;
+    }
+
+    public Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsSnapshotsMap(List<Integer> accountIds, List<String> gameModes) {
+        Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> playerStatisticsSnapshotsMapByAccountIdsAndGameMode = new HashMap<>();
+
+        for (Integer accountId : accountIds) {
+            Map<String, List<PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMapByGameMode = new HashMap<>();
+
+            for (String gameMode: gameModes) {
+                List<PlayerStatisticsSnapshot> playerStatisticsSnapshots = playerStatisticsSnapshotsRepository.findByAccountIdAndGameMode(
+                        accountId, gameMode
+                ).orElse(new ArrayList<>());
+
+                playerStatisticsSnapshotsMapByGameMode.put(gameMode, playerStatisticsSnapshots);
+            }
+
+            playerStatisticsSnapshotsMapByAccountIdsAndGameMode.put(accountId, playerStatisticsSnapshotsMapByGameMode);
+        }
+
+        return playerStatisticsSnapshotsMapByAccountIdsAndGameMode;
+    }
+
+    public void createPlayerStatisticsSnapshotsByAccountIds(List<Integer> accountIds) {
+        for (Integer accountId : accountIds) {
+            WotPlayerDetails wotPlayerDetails = fetchWotPlayerDetails(accountId);
+            Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = buildWotStatisticsByGameModeMap(wotPlayerDetails.getStatistics());
+
             wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
                 Integer maxBattles = playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(accountId, gameMode).orElse(0);
                 Float totalAverageWn8 = vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(accountId, gameMode).orElse(0f);
@@ -62,21 +95,11 @@ public class PlayerStatisticsService {
                 if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
                     playerStatisticsSnapshotsRepository.save(calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotStatisticsByGameMode));
                 }
-
-                List<PlayerStatisticsSnapshot> playerStatisticsSnapshots = playerStatisticsSnapshotsRepository.findByAccountIdAndGameMode(
-                        accountId, gameMode
-                ).orElse(new ArrayList<>());
-
-                playerStatisticsByGameModeMap.put(gameMode, playerStatisticsSnapshots);
             });
-
-            playerStatisticsSnapshotsMapByGameMode.put(accountId, playerStatisticsByGameModeMap);
         }
-
-        return new ResponseEntity<>(playerStatisticsSnapshotsMapByGameMode, HttpStatus.OK);
     }
 
-    private static Map<String, WotStatisticsByGameMode> generatePlayerStatisticsByGameModeMap(WotPlayerStatistics wotPlayerStatistics) {
+    private static Map<String, WotStatisticsByGameMode> buildWotStatisticsByGameModeMap(WotPlayerStatistics wotPlayerStatistics) {
         Map<String, WotStatisticsByGameMode> vehicleStatisticsByGameModeMap = new HashMap<>();
 
         vehicleStatisticsByGameModeMap.put("regular_team", wotPlayerStatistics.getRegularTeam());
@@ -145,7 +168,7 @@ public class PlayerStatisticsService {
 
         playerStatisticsSnapshot.setAccountId(accountId);
         playerStatisticsSnapshot.setGameMode(gameMode);
-        playerStatisticsSnapshot.setCreateDate(new Date());
+        playerStatisticsSnapshot.setCreateTimestamp(Instant.now().getEpochSecond());
         playerStatisticsSnapshot.setTotalBattles(totalBattles);
         playerStatisticsSnapshot.setSurvivedBattles(survivedBattles);
         playerStatisticsSnapshot.setKillDeathRatio(killDeathRatio);
@@ -165,12 +188,17 @@ public class PlayerStatisticsService {
         return playerStatisticsSnapshot;
     }
 
-    private WotPlayerDetails fetchPlayerDetails(
+    private WotPlayerDetails fetchWotPlayerDetails(
             Integer accountId
     ) {
-        return Objects.requireNonNull(
-                wotAccountsFeignClient.getPlayerDetails(APP_ID, "", "", "", "", accountId).getBody()
-        ).getData().get(accountId);
+        try {
+            return Objects.requireNonNull(
+                    wotAccountsFeignClient.getPlayerDetails(APP_ID, "", "", "", "", accountId).getBody()
+            ).getData().get(accountId);
+        } catch (NullPointerException e) {
+            System.out.println("Couldn't fetch WotPlayerDetails with accountId: " + accountId + "\n" + e.getStackTrace());
+            return null;
+        }
     }
 
 }

@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface PlayerStatisticsSnapshotsRepository extends JpaRepository<PlayerStatisticsSnapshot, Integer> {
 
+    Optional<List<PlayerStatisticsSnapshot>> findByAccountId(Integer accountId);
+
     Optional<List<PlayerStatisticsSnapshot>> findByAccountIdAndGameMode(Integer accountId, String gameMode);
 
     @Query(value = "SELECT MAX(total_battles) FROM player_statistics_snapshots WHERE account_id = ?1 AND game_mode = ?2", nativeQuery = true)

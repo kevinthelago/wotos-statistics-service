@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.Column;
+import java.time.Instant;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -86,7 +87,9 @@ public class PlayerStatisticsServiceTest {
 
         List<Integer> accountIds = new ArrayList<>();
         accountIds.add(1);
-        playerStatisticsService.getPlayerStatisticsSnapshots(accountIds);
+        List<String> gameModes = new ArrayList<>();
+        gameModes.add("all");
+        playerStatisticsService.getPlayerStatisticsSnapshotsMap(accountIds, gameModes);
 
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
         verify(playerStatisticsSnapshotsRepository, times(1)).save(any(PlayerStatisticsSnapshot.class));
@@ -130,7 +133,7 @@ public class PlayerStatisticsServiceTest {
         playerStatisticsSnapshot.setPlayerStatisticsSnapshotId(0);
         playerStatisticsSnapshot.setAccountId(accountId);
         playerStatisticsSnapshot.setGameMode("all");
-        playerStatisticsSnapshot.setCreateDate(new Date());
+        playerStatisticsSnapshot.setCreateTimestamp(Instant.now().getEpochSecond());
         playerStatisticsSnapshot.setTotalBattles(0);
         playerStatisticsSnapshot.setSurvivedBattles(0);
         playerStatisticsSnapshot.setKillDeathRatio(0.0f);
