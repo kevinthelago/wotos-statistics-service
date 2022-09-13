@@ -22,13 +22,13 @@ public interface WotPlayerVehiclesFeignClient {
     @GetMapping("/stats/")
     ResponseEntity<WotApiResponse<Map<Integer, List<WotVehicleStatistics>>>> getPlayerVehicleStatistics(
             @RequestParam("application_id") String appId,
-            @RequestParam("account_id") Integer accountId,
+            @RequestParam("account_id") Integer[] accountIds,
             @RequestParam("access_token") String accessToken,
-            @RequestParam("extra") String extra,
-            @RequestParam("fields") String fields,
+            @RequestParam("extra") String[] extra,
+            @RequestParam("fields") String[] fields,
             @RequestParam("in_garage") @Min(0) @Max(1) Integer inGarage,
             @RequestParam("language") String language,
-            @RequestParam("tank_id") Integer[] tankIds
+            @RequestParam("tank_id") Integer[] vehicleIds
     );
 
     @GetMapping("/achievements/")

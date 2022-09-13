@@ -128,8 +128,8 @@ public class PlayerStatisticsServiceTest {
         expectedPlayerStatisticsSnapshotPlayer1.setAverageDroppedCapturePoints(0.551115f);
         expectedPlayerStatisticsSnapshotPlayer1.setAverageSpotting(1.32685f);
 
-        List<Integer> accountIds = new ArrayList<>();
-        accountIds.add(1);
+        Integer[] accountIds = {1};
+
         Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
 
         verify(wotAccountsFeignClient, times(1)).getPlayerDetails("", "", "", "", "", 1);
