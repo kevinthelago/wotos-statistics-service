@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/stats")
+@RequestMapping("/api")
 public class PlayerStatisticsController {
 
     @Autowired
     PlayerStatisticsService playerStatisticsService;
 
-    @GetMapping("/players")
+    @GetMapping("/stats/players")
     public ResponseEntity<Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>>> getPlayerStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds,
             @RequestParam(value = "gameModes") String[] gameModes
@@ -26,7 +26,7 @@ public class PlayerStatisticsController {
         return new ResponseEntity<>(playerStatisticsService.getPlayerStatisticsSnapshotsMap(accountIds, gameModes), HttpStatus.FOUND);
     }
 
-    @PostMapping("/players")
+    @PostMapping("/stats/players")
     public ResponseEntity<HttpStatus> createPlayerStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds
     ) {
@@ -35,7 +35,7 @@ public class PlayerStatisticsController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/recentWn8")
+    @GetMapping("/stats/recentWn8")
     public ResponseEntity<Map<Integer, Map<String, Float>>> getPlayerRecentWn8(
             @RequestParam(value = "accountIds") Integer[] accountIds,
             @RequestParam(value = "gameModes") String[] gameModes,

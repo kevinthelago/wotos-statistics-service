@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/stats")
+@RequestMapping("/api")
 public class VehicleStatisticsController {
 
     @Autowired
     VehicleStatisticsService vehicleStatisticsService;
 
-    @GetMapping("/vehicles")
+    @GetMapping("/stats/vehicles")
     public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds,
             @RequestParam(value = "vehicleIds") Integer[] vehicleIds,
@@ -26,7 +26,7 @@ public class VehicleStatisticsController {
         return new ResponseEntity<>(vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, vehicleIds, gameModes), HttpStatus.OK);
     }
 
-    @PostMapping("/vehicles")
+    @PostMapping("/stats/vehicles")
     public ResponseEntity<HttpStatus> createPlayerVehicleStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds,
             @RequestParam(value = "vehicleIds", required = false) Integer[] vehicleIds
