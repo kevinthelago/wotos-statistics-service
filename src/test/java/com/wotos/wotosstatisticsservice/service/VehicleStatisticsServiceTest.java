@@ -11,10 +11,12 @@ import com.wotos.wotosstatisticsservice.util.feign.XvmExpectedStatisticsFeignCli
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatisticsByGameMode;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotVehicleStatistics;
+import com.wotos.wotosstatisticsservice.util.model.xvm.XvmExpectedStatistics;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
@@ -55,149 +57,116 @@ public class VehicleStatisticsServiceTest {
     @MockBean
     private XvmExpectedStatisticsFeignClient xvmExpectedStatisticsFeignClient;
 
-    // ToDo: Make env variables better
-    @Value("${env.snapshot_rate}")
-    private Integer SNAPSHOT_RATE;
-    @Value("${env.app_id}")
-    private String APP_ID;
-
     @Before
     public void setUp() {
-        ReflectionTestUtils.setField(vehicleStatisticsService, "SNAPSHOT_RATE", SNAPSHOT_RATE);
-        ReflectionTestUtils.setField(vehicleStatisticsService, "APP_ID", APP_ID);
+        ReflectionTestUtils.setField(vehicleStatisticsService, "SNAPSHOT_RATE", 10);
+        ReflectionTestUtils.setField(vehicleStatisticsService, "APP_ID", "");
     }
 
     @Test
     public void createPlayerVehicleStatisticsSnapshotsTest() {
+        WotStatisticsByGameMode wotStatisticsByGameMode = new WotStatisticsByGameMode(
+                100, 200, 75,50,75,100,100,100,
+                50,75,50,100,10,
+                50,100,10,100,
+                100,1000,75,1000,10,
+                100,100,100f,
+                100f, 100f,1000,500,
+                1000,10,0.50f,100f
+        );
 
+        WotStatisticsByGameMode wotEmptyStatistics = new WotStatisticsByGameMode(
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0f,0f,0f,0,0,0,0,0f,0f
+        );
+
+        WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle1 = new WotVehicleStatistics(
+                0, 1, null, 0, 0, 0, 1,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+        );
+
+        WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle2 = new WotVehicleStatistics(
+                0, 2, null, 0, 0, 0, 1,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+        );
+
+        WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle3 = new WotVehicleStatistics(
+                0, 3, null, 0, 0, 0, 1,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+        );
+
+        List<WotVehicleStatistics> wotVehicleStatisticsList = new ArrayList<>();
+
+        wotVehicleStatisticsList.add(wotVehicleStatisticsPlayer1Vehicle1);
+        wotVehicleStatisticsList.add(wotVehicleStatisticsPlayer1Vehicle2);
+        wotVehicleStatisticsList.add(wotVehicleStatisticsPlayer1Vehicle3);
+
+        Map<Integer, List<WotVehicleStatistics>> vehicleStatisticsMap = new HashMap<>();
+        vehicleStatisticsMap.put(1, wotVehicleStatisticsList);
+
+        WotApiResponse<Map<Integer, List<WotVehicleStatistics>>> wotApiResponse = new WotApiResponse<>("", "", "", vehicleStatisticsMap);
+        ResponseEntity<WotApiResponse<Map<Integer, List<WotVehicleStatistics>>>> wotResponseEntity = new ResponseEntity<>(wotApiResponse, HttpStatus.OK);
+        Integer[] vehiclesIdsArray = {1,2,3};
+
+        ExpectedStatistics expectedStatisticsVehicle1 = new ExpectedStatistics();
+        expectedStatisticsVehicle1.setVehicleId(1);
+        expectedStatisticsVehicle1.setExpectedDefense(1f);
+        expectedStatisticsVehicle1.setExpectedFrag(1f);
+        expectedStatisticsVehicle1.setExpectedSpot(1f);
+        expectedStatisticsVehicle1.setExpectedDamage(1f);
+        expectedStatisticsVehicle1.setExpectedWinRate(1f);
+
+        ExpectedStatistics expectedStatisticsVehicle2 = new ExpectedStatistics();
+        expectedStatisticsVehicle2.setVehicleId(2);
+        expectedStatisticsVehicle2.setExpectedDefense(1f);
+        expectedStatisticsVehicle2.setExpectedFrag(1f);
+        expectedStatisticsVehicle2.setExpectedSpot(1f);
+        expectedStatisticsVehicle2.setExpectedDamage(1f);
+        expectedStatisticsVehicle2.setExpectedWinRate(1f);
+
+        ExpectedStatistics expectedStatisticsVehicle3 = new ExpectedStatistics();
+        expectedStatisticsVehicle3.setVehicleId(3);
+        expectedStatisticsVehicle3.setExpectedDefense(1f);
+        expectedStatisticsVehicle3.setExpectedFrag(1f);
+        expectedStatisticsVehicle3.setExpectedSpot(1f);
+        expectedStatisticsVehicle3.setExpectedDamage(1f);
+        expectedStatisticsVehicle3.setExpectedWinRate(1f);
+
+        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics("", 1, "", "", "", null, "", vehiclesIdsArray)).thenReturn(wotResponseEntity);
+        when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all")).thenReturn(Optional.of(100));
+        when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all")).thenReturn(Optional.of(100));
+        when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all")).thenReturn(Optional.of(100));
+        when(expectedStatisticsRepository.findById(1)).thenReturn(Optional.of(expectedStatisticsVehicle1));
+        when(expectedStatisticsRepository.findById(2)).thenReturn(Optional.of(expectedStatisticsVehicle2));
+        when(expectedStatisticsRepository.findById(3)).thenReturn(Optional.of(expectedStatisticsVehicle3));
+
+        List<Integer> accountIds = new ArrayList<>();
+        accountIds.add(1);
+//        accountIds.add(2);
+        List<Integer> vehicleIds = new ArrayList<>();
+        vehicleIds.add(1);
+        vehicleIds.add(2);
+        vehicleIds.add(3);
+
+        Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMap = vehicleStatisticsService.createPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
+
+        verify(wotPlayerVehiclesFeignClient, times(1)).getPlayerVehicleStatistics("", 1, "", "", "", null, "", vehiclesIdsArray);
+        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all");
+        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all");
+        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all");
+        verify(expectedStatisticsRepository, times(1)).findById(1);
+        verify(expectedStatisticsRepository, times(1)).findById(2);
+        verify(expectedStatisticsRepository, times(1)).findById(3);
+
+
+        // ToDo: Validate Values
     }
 
     @Test
     public void getPlayerVehicleStatisticsSnapshotsTest() {
-        // ToDo: Assure calculations are correct rather than building with random values
-        Map<Integer, List<WotVehicleStatistics>> vehicleStatisticsMap = new HashMap<>();
-        List<WotVehicleStatistics> wotVehicleStatistics = new ArrayList<>();
-        wotVehicleStatistics.add(buildRandomVehicleStatistics(1, 11));
-        wotVehicleStatistics.add(buildRandomVehicleStatistics(2, 11));
-        wotVehicleStatistics.add(buildRandomVehicleStatistics(3, 11));
-        vehicleStatisticsMap.put(1, wotVehicleStatistics);
-        WotApiResponse<Map<Integer, List<WotVehicleStatistics>>> wotApiResponse = new WotApiResponse("", "", "", vehicleStatisticsMap);
-        ResponseEntity<WotApiResponse<Map<Integer, List<WotVehicleStatistics>>>> wotResponseEntity = new ResponseEntity(wotApiResponse, HttpStatus.FOUND);
-        Integer[] tankIdArray = {1, 2, 3};
-        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics(
-                "", 1, "", "", "", null, "", tankIdArray
-        )).thenReturn(wotResponseEntity);
 
-        Optional<Integer> maxBattles = Optional.of(0);
-//        when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 1)).thenReturn(maxBattles);
-
-        when(expectedStatisticsRepository.findById(1)).thenReturn(
-                Optional.of(buildExpectedStatistics(1, .5f, .5f, .5f, .5f, .5f))
-        );
-        when(expectedStatisticsRepository.findById(2)).thenReturn(
-                Optional.of(buildExpectedStatistics(2, .5f, .5f, .5f, .5f, .5f))
-        );
-        when(expectedStatisticsRepository.findById(3)).thenReturn(
-                Optional.of(buildExpectedStatistics(3, .5f, .5f, .5f, .5f, .5f))
-        );
-
-        List<VehicleStatisticsSnapshot> vehicleStatisticsSnapshotList = new ArrayList<>();
-        List<Integer> tankIdList = new ArrayList<>();
-        tankIdList.add(1);
-        tankIdList.add(2);
-        tankIdList.add(3);
-        VehicleStatisticsSnapshot vehicleStatisticsSnapshot1 = buildVehicleStatisticSnapshot(
-                1, 1, 11,1,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f
-        );
-        VehicleStatisticsSnapshot vehicleStatisticsSnapshot2 = buildVehicleStatisticSnapshot(
-                1, 2, 11,1,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f
-        );
-        VehicleStatisticsSnapshot vehicleStatisticsSnapshot3 = buildVehicleStatisticSnapshot(
-                1, 3, 11,1,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f
-        );
-        vehicleStatisticsSnapshotList.add(vehicleStatisticsSnapshot1);
-        vehicleStatisticsSnapshotList.add(vehicleStatisticsSnapshot2);
-        vehicleStatisticsSnapshotList.add(vehicleStatisticsSnapshot3);
-
-        List<Integer> accountIds = new ArrayList<>();
-        accountIds.add(1);
-        List<String> gameModes = new ArrayList<>();
-        gameModes.add("all");
-        vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, tankIdList, gameModes);
-
-        when(vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot1)).thenReturn(vehicleStatisticsSnapshot1);
-        when(vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot2)).thenReturn(vehicleStatisticsSnapshot2);
-        when(vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot3)).thenReturn(vehicleStatisticsSnapshot3);
-
-        when(vehicleStatisticsSnapshotsRepository.findByAccountIdAndVehicleIdIn(1, tankIdList)).thenReturn(Optional.of(vehicleStatisticsSnapshotList));
-
-//        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 1);
-//        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 2);
-//        verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 3);
-//        verify(vehicleStatisticsSnapshotsRepository, times(3)).save(any(VehicleStatisticsSnapshot.class));
-    }
-
-    private VehicleStatisticsSnapshot buildVehicleStatisticSnapshot(
-            Integer playerId, Integer tankId, Integer totalBattles,
-            Integer survivedBattles, Float killDeathRatio, Float hitMissRatio,
-            Float winLossRatio, Float averageWn8, Float averageDamage,
-            Float averageExperience, Float averageKills, Float averageDamageReceived,
-            Float averageShots, Float averageStunAssistedDamage, Float averageCapturePoints,
-            Float averageDroppedCapturePoints
-    ) {
-        VehicleStatisticsSnapshot vehicleStatisticsSnapshot = new VehicleStatisticsSnapshot();
-
-        vehicleStatisticsSnapshot.setAccountId(playerId);
-        vehicleStatisticsSnapshot.setVehicleId(tankId);
-        vehicleStatisticsSnapshot.setTotalBattles(totalBattles);
-        vehicleStatisticsSnapshot.setSurvivedBattles(survivedBattles);
-        vehicleStatisticsSnapshot.setKillDeathRatio(killDeathRatio);
-        vehicleStatisticsSnapshot.setHitMissRatio(hitMissRatio);
-        vehicleStatisticsSnapshot.setWinLossRatio(winLossRatio);
-        vehicleStatisticsSnapshot.setAverageWn8(averageWn8);
-        vehicleStatisticsSnapshot.setAverageDamage(averageDamage);
-        vehicleStatisticsSnapshot.setAverageExperience(averageExperience);
-        vehicleStatisticsSnapshot.setAverageKills(averageKills);
-        vehicleStatisticsSnapshot.setAverageDamageReceived(averageDamageReceived);
-        vehicleStatisticsSnapshot.setAverageShots(averageShots);
-        vehicleStatisticsSnapshot.setAverageStunAssistedDamage(averageStunAssistedDamage);
-        vehicleStatisticsSnapshot.setAverageCapturePoints(averageCapturePoints);
-        vehicleStatisticsSnapshot.setAverageDroppedCapturePoints(averageDroppedCapturePoints);
-
-        return vehicleStatisticsSnapshot;
-    }
-
-    private WotVehicleStatistics buildRandomVehicleStatistics(Integer vehicleId, Integer battles) {
-        return new WotVehicleStatistics(
-                0,vehicleId,false,0,
-                0,0,0,null,
-                null,null,null,buildRandomStatisticsByGameMode(battles),
-                null,null,null,null
-        );
-    }
-
-    private WotStatisticsByGameMode buildRandomStatisticsByGameMode(Integer battles) {
-        return new WotStatisticsByGameMode(
-                0,battles, 0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,
-                0f,0f,0f,0,0,0,0,0f,0f
-        );
-    }
-
-    private ExpectedStatistics buildExpectedStatistics(
-            Integer vehicleId, Float expectedDefense, Float expectedFrag,
-            Float expectedSpot, Float expectedDamage, Float expectedWinRate
-    ) {
-        ExpectedStatistics expectedStatistics = new ExpectedStatistics();
-
-        expectedStatistics.setVehicleId(vehicleId);
-        expectedStatistics.setExpectedDefense(expectedDefense);
-        expectedStatistics.setExpectedFrag(expectedFrag);
-        expectedStatistics.setExpectedSpot(expectedSpot);
-        expectedStatistics.setExpectedDamage(expectedDamage);
-        expectedStatistics.setExpectedWinRate(expectedWinRate);
-
-        return expectedStatistics;
     }
 
 }

@@ -52,12 +52,6 @@ public class PlayerStatisticsServiceTest {
     @MockBean
     private WotPlayerVehiclesFeignClient wotPlayerVehiclesFeignClient;
 
-//    // ToDo: Make env variables better
-//    @Value("${env.snapshot_rate}")
-//    private Integer SNAPSHOT_RATE;
-//    @Value("${env.app_id}")
-//    private String APP_ID;
-
     @Before
     public void setUp() {
         ReflectionTestUtils.setField(playerStatisticsService, "SNAPSHOT_RATE", 10);
@@ -136,7 +130,7 @@ public class PlayerStatisticsServiceTest {
 
         List<Integer> accountIds = new ArrayList<>();
         accountIds.add(1);
-        playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
+        Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
 
         verify(wotAccountsFeignClient, times(1)).getPlayerDetails("", "", "", "", "", 1);
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
@@ -148,93 +142,7 @@ public class PlayerStatisticsServiceTest {
 
     @Test
     public void getPlayerStatisticsSnapshotsTest() {
-        // ToDo: Assure calculations are correct rather than building with random values
-        Map<Integer, WotPlayerDetails> playerDetailsMap = new HashMap<>();
-        playerDetailsMap.put(1, buildRandomPlayerDetails(1, 11));
 
-        WotApiResponse<Map<Integer, WotPlayerDetails>> wotApiResponse = new WotApiResponse("", "", "", playerDetailsMap);
-
-        ResponseEntity<WotApiResponse<Map<Integer, WotPlayerDetails>>> wotResponseEntity = new ResponseEntity(wotApiResponse, HttpStatus.FOUND);
-        when(wotAccountsFeignClient.getPlayerDetails(
-                "", "", "", "", "", 1)
-        ).thenReturn(wotResponseEntity);
-
-        Optional<Integer> maxBattles = Optional.of(0);
-        when(playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(1, "all")).thenReturn(maxBattles);
-
-        List<PlayerStatisticsSnapshot> playerStatisticsSnapshotsList = new ArrayList<>();
-        PlayerStatisticsSnapshot playerStatisticsSnapshot = buildPlayerStatisticsSnapshot(1);
-        playerStatisticsSnapshotsList.add(playerStatisticsSnapshot);
-        when(playerStatisticsSnapshotsRepository.save(any(PlayerStatisticsSnapshot.class))).thenReturn(playerStatisticsSnapshot);
-
-        when(playerStatisticsSnapshotsRepository.findByAccountIdAndGameMode(1, "all")).thenReturn(Optional.of(playerStatisticsSnapshotsList));
-
-        List<Integer> accountIds = new ArrayList<>();
-        accountIds.add(1);
-        List<String> gameModes = new ArrayList<>();
-        gameModes.add("all");
-        playerStatisticsService.getPlayerStatisticsSnapshotsMap(accountIds, gameModes);
-
-        verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
-        verify(playerStatisticsSnapshotsRepository, times(1)).save(any(PlayerStatisticsSnapshot.class));
-        verify(playerStatisticsSnapshotsRepository, times(1)).findByAccountIdAndGameMode(1, "all");
-    }
-
-    private WotPlayerDetails buildRandomPlayerDetails(Integer accountId, Integer battles) {
-        return new WotPlayerDetails(
-                "", 0, accountId,0,
-                0,false,0,0,
-                buildPlayerStatistics(battles), "", 0
-        );
-    }
-
-    private WotPlayerStatistics buildPlayerStatistics(Integer battles) {
-        return new WotPlayerStatistics(
-                buildRandomStatisticsByGameMode(0),
-                buildRandomStatisticsByGameMode(battles),
-                buildRandomStatisticsByGameMode(0),
-                0,
-                buildRandomStatisticsByGameMode(0),
-                buildRandomStatisticsByGameMode(0),
-                buildRandomStatisticsByGameMode(0),
-                buildRandomStatisticsByGameMode(0),
-                buildRandomStatisticsByGameMode(0),
-                0
-        );
-    }
-
-    private WotStatisticsByGameMode buildRandomStatisticsByGameMode(Integer battles) {
-        return new WotStatisticsByGameMode(
-                0,battles, 0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,
-                0f,0f,0f,0,0,0,0,0f,0f
-        );
-    }
-
-    private PlayerStatisticsSnapshot buildPlayerStatisticsSnapshot(Integer accountId) {
-        PlayerStatisticsSnapshot playerStatisticsSnapshot = new PlayerStatisticsSnapshot();
-
-        playerStatisticsSnapshot.setPlayerStatisticsSnapshotId(0);
-        playerStatisticsSnapshot.setAccountId(accountId);
-        playerStatisticsSnapshot.setGameMode("all");
-        playerStatisticsSnapshot.setCreateTimestamp(Instant.now().getEpochSecond());
-        playerStatisticsSnapshot.setTotalBattles(0);
-        playerStatisticsSnapshot.setSurvivedBattles(0);
-        playerStatisticsSnapshot.setKillDeathRatio(0.0f);
-        playerStatisticsSnapshot.setHitMissRatio(0.0f);
-        playerStatisticsSnapshot.setWinLossRatio(0.0f);
-        playerStatisticsSnapshot.setTotalAverageWn8(0.0f);
-        playerStatisticsSnapshot.setAverageExperience(0.0f);
-        playerStatisticsSnapshot.setAverageDamage(0.0f);
-        playerStatisticsSnapshot.setAverageKills(0.0f);
-        playerStatisticsSnapshot.setAverageDamageReceived(0.0f);
-        playerStatisticsSnapshot.setAverageShots(0.0f);
-        playerStatisticsSnapshot.setAverageStunAssistedDamage(0.0f);
-        playerStatisticsSnapshot.setAverageCapturePoints(0.0f);
-        playerStatisticsSnapshot.setAverageDroppedCapturePoints(0.0f);
-        playerStatisticsSnapshot.setAverageSpotting(0.0f);
-
-        return playerStatisticsSnapshot;
     }
 
 }
