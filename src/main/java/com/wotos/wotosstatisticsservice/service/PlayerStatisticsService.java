@@ -45,7 +45,7 @@ public class PlayerStatisticsService {
         this.playerStatisticsSnapshotsRepository = playerStatisticsSnapshotsRepository;
     }
 
-    public Map<Integer, Map<String, Float>> getPlayerRecentAverageWn8Map(List<Integer> accountIds, List<String> gameModes, Long timestamp) {
+    public Map<Integer, Map<String, Float>> getPlayerRecentAverageWn8Map(Integer[] accountIds, String[] gameModes, Long timestamp) {
         Map<Integer, Map<String, Float>> playerRecentAverageWn8MapByAccountIdAndGameMode = new HashMap<>();
 
         for (Integer accountId : accountIds) {
@@ -63,7 +63,7 @@ public class PlayerStatisticsService {
         return playerRecentAverageWn8MapByAccountIdAndGameMode;
     }
 
-    public Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsSnapshotsMap(List<Integer> accountIds, List<String> gameModes) {
+    public Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsSnapshotsMap(Integer[] accountIds, String[] gameModes) {
         Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> playerStatisticsSnapshotsMapByAccountIdsAndGameMode = new HashMap<>();
 
         for (Integer accountId : accountIds) {
@@ -83,7 +83,7 @@ public class PlayerStatisticsService {
         return playerStatisticsSnapshotsMapByAccountIdsAndGameMode;
     }
 
-    public Map<Integer, Map<String, PlayerStatisticsSnapshot>> createPlayerStatisticsSnapshotsByAccountIds(List<Integer> accountIds) {
+    public Map<Integer, Map<String, PlayerStatisticsSnapshot>> createPlayerStatisticsSnapshotsByAccountIds(Integer[] accountIds) {
         Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = new HashMap<>();
 
         for (Integer accountId : accountIds) {

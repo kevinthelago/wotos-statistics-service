@@ -108,7 +108,6 @@ public class VehicleStatisticsServiceTest {
 
         WotApiResponse<Map<Integer, List<WotVehicleStatistics>>> wotApiResponse = new WotApiResponse<>("", "", "", vehicleStatisticsMap);
         ResponseEntity<WotApiResponse<Map<Integer, List<WotVehicleStatistics>>>> wotResponseEntity = new ResponseEntity<>(wotApiResponse, HttpStatus.OK);
-        Integer[] vehiclesIdsArray = {1,2,3};
 
         ExpectedStatistics expectedStatisticsVehicle1 = new ExpectedStatistics();
         expectedStatisticsVehicle1.setVehicleId(1);
@@ -134,7 +133,10 @@ public class VehicleStatisticsServiceTest {
         expectedStatisticsVehicle3.setExpectedDamage(1f);
         expectedStatisticsVehicle3.setExpectedWinRate(1f);
 
-        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics("", 1, "", "", "", null, "", vehiclesIdsArray)).thenReturn(wotResponseEntity);
+        Integer[] accountIds = {1};
+        Integer[] vehicleIds = {1,2,3};
+
+        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics("", accountIds, "", null, null, null, "", vehicleIds)).thenReturn(wotResponseEntity);
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all")).thenReturn(Optional.of(100));
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all")).thenReturn(Optional.of(100));
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all")).thenReturn(Optional.of(100));
@@ -142,17 +144,9 @@ public class VehicleStatisticsServiceTest {
         when(expectedStatisticsRepository.findById(2)).thenReturn(Optional.of(expectedStatisticsVehicle2));
         when(expectedStatisticsRepository.findById(3)).thenReturn(Optional.of(expectedStatisticsVehicle3));
 
-        List<Integer> accountIds = new ArrayList<>();
-        accountIds.add(1);
-//        accountIds.add(2);
-        List<Integer> vehicleIds = new ArrayList<>();
-        vehicleIds.add(1);
-        vehicleIds.add(2);
-        vehicleIds.add(3);
-
         Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMap = vehicleStatisticsService.createPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
 
-        verify(wotPlayerVehiclesFeignClient, times(1)).getPlayerVehicleStatistics("", 1, "", "", "", null, "", vehiclesIdsArray);
+        verify(wotPlayerVehiclesFeignClient, times(1)).getPlayerVehicleStatistics("", accountIds, "", null, null, null, "", vehicleIds);
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all");

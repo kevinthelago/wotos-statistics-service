@@ -60,7 +60,7 @@ public class VehicleStatisticsService {
         this.expectedStatisticsRepository = expectedStatisticsRepository;
     }
 
-    public Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> getPlayerVehicleStatisticsSnapshotsMap(List<Integer> accountIds, List<Integer> vehicleIds, List<String> gameModes) {
+    public Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> getPlayerVehicleStatisticsSnapshotsMap(Integer[] accountIds, Integer[] vehicleIds, String[] gameModes) {
         Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> playerVehicleStatisticsSnapshotsMapByAccountIdsAndVehicleIdAndGameMode = new HashMap<>();
 
         for (Integer accountId : accountIds) {
@@ -83,11 +83,12 @@ public class VehicleStatisticsService {
         return playerVehicleStatisticsSnapshotsMapByAccountIdsAndVehicleIdAndGameMode;
     }
 
-    public Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> createPlayerVehicleStatisticsSnapshots(List<Integer> accountIds, List<Integer> vehicleIds) {
+    public Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> createPlayerVehicleStatisticsSnapshots(Integer[] accountIds, Integer[] vehicleIds) {
+        Map<Integer, List<WotVehicleStatistics>> wotVehicleStatisticsMap = fetchWotVehicleStatistics(accountIds, "", null, null, null, "", vehicleIds);
         Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMapByPlayer = new HashMap<>();
 
         for (Integer accountId : accountIds) {
-            List<WotVehicleStatistics> wotVehicleStatisticsList = fetchWotVehicleStatistics(accountId, "", "", "", null, "", vehicleIds);
+            List<WotVehicleStatistics> wotVehicleStatisticsList = wotVehicleStatisticsMap.get(accountId);
             Map<Integer, Map<String, VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsMapByVehicle = new HashMap<>();
 
             for (WotVehicleStatistics wotVehicleStatistics : wotVehicleStatisticsList) {
@@ -221,20 +222,17 @@ public class VehicleStatisticsService {
         return vehicleStatisticsSnapshot;
     }
 
-    private List<WotVehicleStatistics> fetchWotVehicleStatistics(
-            Integer accountId, String accessToken, String extra,
-            String fields, Integer inGarage, String language, List<Integer> vehicleIds
+    private Map<Integer, List<WotVehicleStatistics>> fetchWotVehicleStatistics(
+            Integer[] accountIds, String accessToken, String[] extra,
+            String[] fields, Integer inGarage, String language, Integer[] vehicleIds
     ) {
-        Integer[] array = new Integer[vehicleIds.size()];
-        vehicleIds.toArray(array);
-
         try {
             return Objects.requireNonNull(
-                    wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics(APP_ID, accountId, accessToken, extra, fields, inGarage, language, array).getBody()
-            ).getData().get(accountId);
+                    wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics(APP_ID, accountIds, accessToken, extra, fields, inGarage, language, vehicleIds).getBody()
+            ).getData();
         } catch (NullPointerException e) {
-            System.out.println("Couldn't fetch WotVehicleStatistics with accountId: " + accountId + " and vehicleIds: " + vehicleIds.toString() + "\n" + e.getStackTrace());
-            return new ArrayList<>();
+            System.out.println("Couldn't fetch WotVehicleStatistics with accountIds: " + accountIds + " and vehicleIds: " + vehicleIds.toString() + "\n" + e.getStackTrace());
+            return new HashMap<>();
         }
     }
 

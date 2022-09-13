@@ -19,17 +19,17 @@ public class VehicleStatisticsController {
 
     @GetMapping("/vehicles")
     public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
-            @RequestParam(value = "accountIds") List<Integer> accountIds,
-            @RequestParam(value = "vehicleIds") List<Integer> vehicleIds,
-            @RequestParam(value = "gameModes") List<String> gameModes
+            @RequestParam(value = "accountIds") Integer[] accountIds,
+            @RequestParam(value = "vehicleIds") Integer[] vehicleIds,
+            @RequestParam(value = "gameModes") String[] gameModes
     ) {
         return new ResponseEntity<>(vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, vehicleIds, gameModes), HttpStatus.OK);
     }
 
     @PostMapping("/vehicles")
     public ResponseEntity<HttpStatus> createPlayerVehicleStatisticsSnapshots(
-            @RequestParam(value = "accountIds") List<Integer> accountIds,
-            @RequestParam(value = "vehicleIds", required = false) List<Integer> vehicleIds
+            @RequestParam(value = "accountIds") Integer[] accountIds,
+            @RequestParam(value = "vehicleIds", required = false) Integer[] vehicleIds
     ) {
         vehicleStatisticsService.createPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
 

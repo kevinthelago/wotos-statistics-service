@@ -20,15 +20,15 @@ public class PlayerStatisticsController {
 
     @GetMapping("/players")
     public ResponseEntity<Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>>> getPlayerStatisticsSnapshots(
-            @RequestParam(value = "accountIds") List<Integer> accountIds,
-            @RequestParam(value = "gameModes") List<String> gameModes
+            @RequestParam(value = "accountIds") Integer[] accountIds,
+            @RequestParam(value = "gameModes") String[] gameModes
     ) {
         return new ResponseEntity<>(playerStatisticsService.getPlayerStatisticsSnapshotsMap(accountIds, gameModes), HttpStatus.FOUND);
     }
 
     @PostMapping("/players")
     public ResponseEntity<HttpStatus> createPlayerStatisticsSnapshots(
-            @RequestParam(value = "accountIds") List<Integer> accountIds
+            @RequestParam(value = "accountIds") Integer[] accountIds
     ) {
         playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
 
@@ -37,8 +37,8 @@ public class PlayerStatisticsController {
 
     @GetMapping("/recentWn8")
     public ResponseEntity<Map<Integer, Map<String, Float>>> getPlayerRecentWn8(
-            @RequestParam(value = "accountIds") List<Integer> accountIds,
-            @RequestParam(value = "gameModes") List<String> gameModes,
+            @RequestParam(value = "accountIds") Integer[] accountIds,
+            @RequestParam(value = "gameModes") String[] gameModes,
             @RequestParam(value = "timestamp") Long timestamp
     ) {
         return new ResponseEntity<>(playerStatisticsService.getPlayerRecentAverageWn8Map(accountIds, gameModes, timestamp), HttpStatus.FOUND);
