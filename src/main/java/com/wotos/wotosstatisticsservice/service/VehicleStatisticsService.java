@@ -81,6 +81,7 @@ public class VehicleStatisticsService {
         Map<Integer, List<WotVehicleStatistics>> wotVehicleStatisticsMap = fetchWotVehicleStatistics(accountIds, "", null, null, null, "", vehicleIds);
         Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMapByPlayer = new HashMap<>();
 
+        // ToDo: Change this to loop through wotVehicleStatisticsMap
         for (Integer accountId : accountIds) {
             List<WotVehicleStatistics> wotVehicleStatisticsList = wotVehicleStatisticsMap.get(accountId);
             Map<Integer, Map<String, VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsMapByVehicle = new HashMap<>();
