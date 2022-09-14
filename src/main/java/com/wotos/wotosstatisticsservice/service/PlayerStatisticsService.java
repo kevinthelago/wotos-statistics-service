@@ -79,9 +79,11 @@ public class PlayerStatisticsService {
 
     public Map<Integer, Map<String, PlayerStatisticsSnapshot>> createPlayerStatisticsSnapshotsByAccountIds(Integer[] accountIds) {
         Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = new HashMap<>();
+        Map<Integer, WotPlayerDetails> wotPlayerDetailsMap = fetchWotPlayerDetails(accountIds);
 
+        // ToDo: Change this to loop through wotPlayerDetailsMap
         for (Integer accountId : accountIds) {
-            WotPlayerDetails wotPlayerDetails = fetchWotPlayerDetails(accountId);
+            WotPlayerDetails wotPlayerDetails = wotPlayerDetailsMap.get(accountId);
             Map<String, WotStatisticsByGameMode> wotStatisticsByGameModeMap = buildWotStatisticsByGameModeMap(wotPlayerDetails.getStatistics());
             Map<String, PlayerStatisticsSnapshot> playerStatisticsSnapshotsMapByGameMode = new HashMap<>();
 
@@ -192,15 +194,15 @@ public class PlayerStatisticsService {
         return playerStatisticsSnapshot;
     }
 
-    private WotPlayerDetails fetchWotPlayerDetails(
-            Integer accountId
+    private Map<Integer, WotPlayerDetails> fetchWotPlayerDetails(
+            Integer[] accountIds
     ) {
         try {
             return Objects.requireNonNull(
-                    wotAccountsFeignClient.getPlayerDetails(APP_ID, "", "", "", "", accountId).getBody()
-            ).getData().get(accountId);
+                    wotAccountsFeignClient.getPlayerDetails(APP_ID, "", null, null, "", accountIds).getBody()
+            ).getData();
         } catch (NullPointerException e) {
-            System.out.println("Couldn't fetch WotPlayerDetails with accountId: " + accountId + "\n" + e.getStackTrace());
+            System.out.println("Couldn't fetch WotPlayerDetails with accountId: " + accountIds + "\n" + e.getStackTrace());
             return null;
         }
     }

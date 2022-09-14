@@ -94,10 +94,11 @@ public class PlayerStatisticsServiceTest {
 
         Map<Integer, WotPlayerDetails> wotPlayerDetailsMapPlayer1 = new HashMap<>();
         wotPlayerDetailsMapPlayer1.put(1, wotPlayerDetailsPlayer1);
+        Integer[] accountIds = {1};
 
         WotApiResponse<Map<Integer, WotPlayerDetails>> wotApiResponsePlayer1 = new WotApiResponse<>("", "", "", wotPlayerDetailsMapPlayer1);
         ResponseEntity<WotApiResponse<Map<Integer, WotPlayerDetails>>> wotResponseEntityPlayer1 = new ResponseEntity<>(wotApiResponsePlayer1, HttpStatus.OK);
-        when(wotAccountsFeignClient.getPlayerDetails("", "", "", "", "", 1)).thenReturn(wotResponseEntityPlayer1);
+        when(wotAccountsFeignClient.getPlayerDetails("", "", null, null, "", accountIds)).thenReturn(wotResponseEntityPlayer1);
 
         when(playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(1, "all")).thenReturn(Optional.of(0));
         when(vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(1, "all")).thenReturn(Optional.of(1592.67f));
@@ -124,11 +125,9 @@ public class PlayerStatisticsServiceTest {
         expectedPlayerStatisticsSnapshotPlayer1.setAverageDroppedCapturePoints(0.551115f);
         expectedPlayerStatisticsSnapshotPlayer1.setAverageSpotting(1.32685f);
 
-        Integer[] accountIds = {1};
-
         Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
 
-        verify(wotAccountsFeignClient, times(1)).getPlayerDetails("", "", "", "", "", 1);
+        verify(wotAccountsFeignClient, times(1)).getPlayerDetails("", "", null, null, "", accountIds);
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "clan");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).averageAverageWn8ByGameModeAndAccountId(1, "all");

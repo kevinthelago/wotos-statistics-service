@@ -20,10 +20,10 @@ public interface WotAccountsFeignClient {
     ResponseEntity<WotApiResponse<Map<Integer, WotPlayerDetails>>> getPlayerDetails(
             @RequestParam(value = "application_id") String appId,
             @RequestParam(value = "access_token", required = false) String accessToken,
-            @RequestParam(value = "extra", required = false) String extra,
-            @RequestParam(value = "fields", required = false) String fields,
-            @RequestParam(value = "language", required = false) String language,
-            @RequestParam(value = "account_id") Integer accountId
+            @RequestParam(value = "extra", required = false) String[] extra,
+            @RequestParam(value = "fields", required = false) String[] fields,
+            @RequestParam(value = "language", required = false, defaultValue = "en") String language,
+            @RequestParam(value = "account_id") Integer[] accountIds
     );
 
 }
