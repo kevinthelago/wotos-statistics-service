@@ -1,4 +1,4 @@
-package com.wotos.wotosstatisticsservice.util.feign;
+package com.wotos.wotosstatisticsservice.util.feign.xvm;
 
 import com.wotos.wotosstatisticsservice.util.model.xvm.XvmApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.xvm.XvmExpectedStatistics;

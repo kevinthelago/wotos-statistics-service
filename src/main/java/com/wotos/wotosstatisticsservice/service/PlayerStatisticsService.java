@@ -2,22 +2,16 @@ package com.wotos.wotosstatisticsservice.service;
 
 import com.sun.istack.NotNull;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
-import com.wotos.wotosstatisticsservice.repo.ExpectedStatisticsRepository;
 import com.wotos.wotosstatisticsservice.repo.PlayerStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
-import com.wotos.wotosstatisticsservice.util.feign.WotAccountsFeignClient;
-import com.wotos.wotosstatisticsservice.util.feign.WotPlayerVehiclesFeignClient;
-import com.wotos.wotosstatisticsservice.util.feign.XvmExpectedStatisticsFeignClient;
+import com.wotos.wotosstatisticsservice.util.feign.wot.WotAccountsFeignClient;
 import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotPlayerStatistics;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatisticsByGameMode;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
