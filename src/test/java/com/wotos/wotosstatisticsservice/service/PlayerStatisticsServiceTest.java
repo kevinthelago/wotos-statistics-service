@@ -1,11 +1,10 @@
 package com.wotos.wotosstatisticsservice.service;
 
-import com.wotos.wotosstatisticsservice.dao.ExpectedStatistics;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.repo.PlayerStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
-import com.wotos.wotosstatisticsservice.util.feign.WotAccountsFeignClient;
-import com.wotos.wotosstatisticsservice.util.feign.WotPlayerVehiclesFeignClient;
+import com.wotos.wotosstatisticsservice.util.feign.wot.WotAccountsFeignClient;
+import com.wotos.wotosstatisticsservice.util.feign.wot.WotPlayerVehiclesFeignClient;
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotPlayerStatistics;
@@ -15,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -23,11 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.persistence.Column;
 import java.time.Instant;
 import java.util.*;
 
-import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 

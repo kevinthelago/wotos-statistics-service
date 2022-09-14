@@ -1,4 +1,4 @@
-package com.wotos.wotosstatisticsservice.util.feign;
+package com.wotos.wotosstatisticsservice.util.feign.wot;
 
 import com.wotos.wotosstatisticsservice.config.FeignConfig;
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
@@ -18,12 +18,12 @@ public interface WotAccountsFeignClient {
 
     @GetMapping(value = "/info/", consumes = "application/json")
     ResponseEntity<WotApiResponse<Map<Integer, WotPlayerDetails>>> getPlayerDetails(
-            @RequestParam("application_id") String appId,
-            @RequestParam("access_token") String accessToken,
-            @RequestParam("extra") String extra,
-            @RequestParam("fields") String fields,
-            @RequestParam("language") String language,
-            @RequestParam("account_id") Integer accountId
+            @RequestParam(value = "application_id") String appId,
+            @RequestParam(value = "access_token", required = false) String accessToken,
+            @RequestParam(value = "extra", required = false) String extra,
+            @RequestParam(value = "fields", required = false) String fields,
+            @RequestParam(value = "language", required = false) String language,
+            @RequestParam(value = "account_id") Integer accountId
     );
 
 }
