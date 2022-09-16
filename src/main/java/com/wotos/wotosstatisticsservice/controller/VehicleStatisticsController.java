@@ -2,7 +2,6 @@ package com.wotos.wotosstatisticsservice.controller;
 
 import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.service.VehicleStatisticsService;
-import com.wotos.wotosstatisticsservice.validation.constraints.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
