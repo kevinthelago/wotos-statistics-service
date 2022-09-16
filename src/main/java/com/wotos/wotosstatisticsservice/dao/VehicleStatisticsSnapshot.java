@@ -1,7 +1,6 @@
 package com.wotos.wotosstatisticsservice.dao;
 
 import javax.persistence.*;
-import java.util.Date;
 
 
 @Entity
