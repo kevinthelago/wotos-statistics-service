@@ -4,26 +4,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class WotPlayerStatistics {
 
-    private final WotStatisticsByGameMode clan;
-    private final WotStatisticsByGameMode all;
+    private final WotStatistics clan;
+    private final WotStatistics all;
     @JsonProperty("regular_team")
-    private final WotStatisticsByGameMode regularTeam;
+    private final WotStatistics regularTeam;
     @JsonProperty("trees_cut")
     private final Integer treesCut;
-    private final WotStatisticsByGameMode company;
+    private final WotStatistics company;
     @JsonProperty("stronghold_skirmish")
-    private final WotStatisticsByGameMode strongholdSkirmish;
+    private final WotStatistics strongholdSkirmish;
     @JsonProperty("stronghold_defense")
-    private final WotStatisticsByGameMode strongholdDefense;
-    private final WotStatisticsByGameMode historical;
-    private final WotStatisticsByGameMode team;
+    private final WotStatistics strongholdDefense;
+    private final WotStatistics historical;
+    private final WotStatistics team;
     private final Integer frags;
+    private final WotStatistics random;
+    private final WotStatistics epic;
+    private final WotStatistics fallout;
+    @JsonProperty("ranked_battles")
+    private final WotStatistics rankedBattles;
 
     public WotPlayerStatistics(
-            WotStatisticsByGameMode clan, WotStatisticsByGameMode all, WotStatisticsByGameMode regularTeam,
-            Integer treesCut, WotStatisticsByGameMode company, WotStatisticsByGameMode strongholdSkirmish,
-            WotStatisticsByGameMode strongholdDefense, WotStatisticsByGameMode historical,
-            WotStatisticsByGameMode team, Integer frags
+            WotStatistics clan, WotStatistics all, WotStatistics regularTeam,
+            Integer treesCut, WotStatistics company, WotStatistics strongholdSkirmish,
+            WotStatistics strongholdDefense, WotStatistics historical, WotStatistics team,
+            Integer frags, WotStatistics random, WotStatistics epic, WotStatistics fallout,
+            WotStatistics rankedBattles
     ) {
         this.clan = clan;
         this.all = all;
@@ -35,17 +41,21 @@ public class WotPlayerStatistics {
         this.historical = historical;
         this.team = team;
         this.frags = frags;
+        this.random = random;
+        this.epic = epic;
+        this.fallout = fallout;
+        this.rankedBattles = rankedBattles;
     }
 
-    public WotStatisticsByGameMode getClan() {
+    public WotStatistics getClan() {
         return clan;
     }
 
-    public WotStatisticsByGameMode getAll() {
+    public WotStatistics getAll() {
         return all;
     }
 
-    public WotStatisticsByGameMode getRegularTeam() {
+    public WotStatistics getRegularTeam() {
         return regularTeam;
     }
 
@@ -53,27 +63,43 @@ public class WotPlayerStatistics {
         return treesCut;
     }
 
-    public WotStatisticsByGameMode getCompany() {
+    public WotStatistics getCompany() {
         return company;
     }
 
-    public WotStatisticsByGameMode getStrongholdSkirmish() {
+    public WotStatistics getStrongholdSkirmish() {
         return strongholdSkirmish;
     }
 
-    public WotStatisticsByGameMode getStrongholdDefense() {
+    public WotStatistics getStrongholdDefense() {
         return strongholdDefense;
     }
 
-    public WotStatisticsByGameMode getHistorical() {
+    public WotStatistics getHistorical() {
         return historical;
     }
 
-    public WotStatisticsByGameMode getTeam() {
+    public WotStatistics getTeam() {
         return team;
     }
 
     public Integer getFrags() {
         return frags;
+    }
+
+    public WotStatistics getRandom() {
+        return random;
+    }
+
+    public WotStatistics getEpic() {
+        return epic;
+    }
+
+    public WotStatistics getFallout() {
+        return fallout;
+    }
+
+    public WotStatistics getRankedBattles() {
+        return rankedBattles;
     }
 }

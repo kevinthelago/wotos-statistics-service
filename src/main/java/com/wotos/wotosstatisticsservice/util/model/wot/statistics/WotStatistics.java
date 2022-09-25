@@ -2,7 +2,7 @@ package com.wotos.wotosstatisticsservice.util.model.wot.statistics;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class WotStatisticsByGameMode {
+public class WotStatistics {
 
     private final Integer spotted;
     private final Integer battles;
@@ -61,7 +61,7 @@ public class WotStatisticsByGameMode {
     @JsonProperty("avg_damage_blocked")
     private final Float averageDamageBlocked;
 
-    public WotStatisticsByGameMode(
+    public WotStatistics(
             Integer spotted, Integer battles, Integer wins, Integer draws,
             Integer losses, Integer frags, Integer xp, Integer shots, Integer piercings,
             Integer hits, Integer noDamageDirectHitsReceived, Integer directHitsReceived,

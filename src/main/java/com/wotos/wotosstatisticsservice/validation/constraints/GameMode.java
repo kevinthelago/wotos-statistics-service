@@ -1,17 +1,17 @@
 package com.wotos.wotosstatisticsservice.validation.constraints;
 
-import com.wotos.wotosstatisticsservice.validation.LanguageValidator;
+import com.wotos.wotosstatisticsservice.validation.GameModeValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Target({ElementType.PARAMETER})
-@Constraint(validatedBy = LanguageValidator.class)
+@Constraint(validatedBy = GameModeValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Language {
-    String message() default "Invalid Language Code";
+public @interface GameMode {
+    String message() default "Invalid GameModes";
 
     Class<?>[] groups() default {};
 

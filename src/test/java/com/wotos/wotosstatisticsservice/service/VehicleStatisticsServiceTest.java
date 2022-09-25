@@ -9,7 +9,7 @@ import com.wotos.wotosstatisticsservice.util.feign.wot.WotAccountsFeignClient;
 import com.wotos.wotosstatisticsservice.util.feign.wot.WotPlayerVehiclesFeignClient;
 import com.wotos.wotosstatisticsservice.util.feign.xvm.XvmExpectedStatisticsFeignClient;
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatisticsByGameMode;
+import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatistics;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotVehicleStatistics;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +62,7 @@ public class VehicleStatisticsServiceTest {
 
     @Test
     public void createPlayerVehicleStatisticsSnapshotsTest() {
-        WotStatisticsByGameMode wotStatisticsByGameMode = new WotStatisticsByGameMode(
+        WotStatistics wotStatistics = new WotStatistics(
                 100, 200, 75,50,75,100,100,100,
                 50,75,50,100,10,
                 50,100,10,100,
@@ -72,26 +72,29 @@ public class VehicleStatisticsServiceTest {
                 1000,10,0.50f,100f
         );
 
-        WotStatisticsByGameMode wotEmptyStatistics = new WotStatisticsByGameMode(
+        WotStatistics wotEmptyStatistics = new WotStatistics(
                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0f,0f,0f,0,0,0,0,0f,0f
         );
 
         WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle1 = new WotVehicleStatistics(
                 0, 1, null, 0, 0, 0, 1,
                 wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
-                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+                wotStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
         );
 
         WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle2 = new WotVehicleStatistics(
                 0, 2, null, 0, 0, 0, 1,
                 wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
-                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+                wotStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
         );
 
         WotVehicleStatistics wotVehicleStatisticsPlayer1Vehicle3 = new WotVehicleStatistics(
                 0, 3, null, 0, 0, 0, 1,
                 wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
-                wotStatisticsByGameMode, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
+                wotStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
         );
 
         List<WotVehicleStatistics> wotVehicleStatisticsList = new ArrayList<>();
