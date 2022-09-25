@@ -8,7 +8,7 @@ import com.wotos.wotosstatisticsservice.util.feign.wot.WotPlayerVehiclesFeignCli
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotPlayerStatistics;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatisticsByGameMode;
+import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatistics;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +56,7 @@ public class PlayerStatisticsServiceTest {
 
     @Test
     public void createPlayerStatisticsSnapshotTest() {
-        WotStatisticsByGameMode wotAllStatistics = new WotStatisticsByGameMode(
+        WotStatistics wotAllStatistics = new WotStatistics(
                 22311, 16815, 9004,248,7563,16871,10625800,159323,
                 66317,109538,20840,71468,3136,
                 6172,48870,231,2664,
@@ -66,18 +66,20 @@ public class PlayerStatisticsServiceTest {
                 20874970,10,0.38f,390.32f
         );
 
-        WotStatisticsByGameMode wotClanStatistics = new WotStatisticsByGameMode(
+        WotStatistics wotClanStatistics = new WotStatistics(
                 169,143,86,14,43,107,104847,974,484,766,188,638,4,49,
                 450,0,0,63,86,79,235116,0,102,0,
                 573.63f,165f,408.63f,0,733,251883,0,0.47f,642.21f
         );
 
-        WotStatisticsByGameMode wotEmptyStatistics = new WotStatisticsByGameMode(
+        WotStatistics wotEmptyStatistics = new WotStatistics(
                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0f,0f,0f,0,0,0,0,0f,0f
         );
 
         WotPlayerStatistics wotPlayerStatistics = new WotPlayerStatistics(
-                wotClanStatistics, wotAllStatistics, wotEmptyStatistics, 0, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, null
+                wotClanStatistics, wotAllStatistics, wotEmptyStatistics, 0, wotEmptyStatistics,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, null,
+                wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics, wotEmptyStatistics
         );
 
         WotPlayerDetails wotPlayerDetailsPlayer1 = new WotPlayerDetails(

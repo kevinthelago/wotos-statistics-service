@@ -22,8 +22,8 @@ public class VehicleStatisticsController {
     @GetMapping("/stats/vehicles")
     public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds,
-            @RequestParam(value = "vehicleIds") Integer[] vehicleIds,
-            @RequestParam(value = "gameModes") String[] gameModes
+            @RequestParam(value = "vehicleIds", required = false) Integer[] vehicleIds,
+            @RequestParam(value = "gameModes", required = false) String[] gameModes
     ) {
         return new ResponseEntity<>(vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, vehicleIds, gameModes), HttpStatus.OK);
     }
