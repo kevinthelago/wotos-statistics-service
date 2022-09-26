@@ -21,6 +21,8 @@ public class PlayerStatisticsService {
     private String APP_ID;
     @Value("${env.snapshot_rate}")
     private Integer SNAPSHOT_RATE;
+    @Value("${env.recent_wn8_timestamp}")
+    private Long RECENT_WN8_TIMESTAMP;
 
     private final WotAccountsFeignClient wotAccountsFeignClient;
 
@@ -37,24 +39,6 @@ public class PlayerStatisticsService {
 
         this.vehicleStatisticsSnapshotsRepository = vehicleStatisticsSnapshotsRepository;
         this.playerStatisticsSnapshotsRepository = playerStatisticsSnapshotsRepository;
-    }
-
-    public Map<Integer, Map<String, Float>> getPlayerRecentAverageWn8Map(Integer[] accountIds, String[] gameModes, Long timestamp) {
-        Map<Integer, Map<String, Float>> playerRecentAverageWn8MapByAccountIdAndGameMode = new HashMap<>();
-
-        for (Integer accountId : accountIds) {
-            Map<String, Float> playerRecentAverageWn8MapByGameMode = new HashMap<>();
-
-            for (String gameMode : gameModes) {
-                Float recentAverageWn8 = vehicleStatisticsSnapshotsRepository.averageRecentAverageWn8ByGameModeAndAccountId(accountId, gameMode, timestamp).orElse(0f);
-
-                playerRecentAverageWn8MapByGameMode.put(gameMode, recentAverageWn8);
-            }
-
-            playerRecentAverageWn8MapByAccountIdAndGameMode.put(accountId, playerRecentAverageWn8MapByGameMode);
-        }
-
-        return playerRecentAverageWn8MapByAccountIdAndGameMode;
     }
 
     public Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsSnapshotsMap(Integer[] accountIds, String[] gameModes) {
@@ -74,9 +58,10 @@ public class PlayerStatisticsService {
                 if (wotStatisticsByGameMode != null) {
                     Integer maxBattles = playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(accountId, gameMode).orElse(0);
                     Float totalAverageWn8 = vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(accountId, gameMode).orElse(0f);
+                    Float recentAverageWn8 = vehicleStatisticsSnapshotsRepository.averageRecentAverageWn8ByGameModeAndAccountId(accountId, gameMode, RECENT_WN8_TIMESTAMP).orElse(0f);
 
                     if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
-                        PlayerStatisticsSnapshot playerStatisticsSnapshot = calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, wotStatisticsByGameMode);
+                        PlayerStatisticsSnapshot playerStatisticsSnapshot = calculatePlayerStatisticsSnapshot(accountId, gameMode, totalAverageWn8, recentAverageWn8, wotStatisticsByGameMode);
 
                         playerStatisticsSnapshotsMapByGameMode.put(gameMode, playerStatisticsSnapshot);
                         playerStatisticsSnapshotsRepository.save(playerStatisticsSnapshot);
@@ -110,7 +95,7 @@ public class PlayerStatisticsService {
 
     private static PlayerStatisticsSnapshot calculatePlayerStatisticsSnapshot(
             @NotNull Integer accountId, @NotNull String gameMode, @NotNull Float totalAverageWn8,
-            @NotNull WotStatistics wotStatistics
+            @NotNull Float recentAverageWn8, @NotNull WotStatistics wotStatistics
     ) {
         float wins = wotStatistics.getWins();
         float battles = wotStatistics.getBattles();
@@ -142,7 +127,7 @@ public class PlayerStatisticsService {
 
         return buildPlayerStatisticsSnapshot(
                 accountId, gameMode, (int) battles, (int) survivedBattles, killDeathRatio, hitMissRatio,
-                winLossRatio, totalAverageWn8, averageExperiencePerGame, averageDamagePerGame,
+                winLossRatio, totalAverageWn8, recentAverageWn8, averageExperiencePerGame, averageDamagePerGame,
                 averageKillsPerGame, averageDamageReceivedPerGame, averageShotsPerGame,
                 averageStunAssistedDamage, averageCapturePointsPerGame,
                 averageDroppedCapturePoints, averageSpottingPerGame
@@ -151,7 +136,7 @@ public class PlayerStatisticsService {
 
     private static PlayerStatisticsSnapshot buildPlayerStatisticsSnapshot(
             Integer accountId, String gameMode, Integer totalBattles, Integer survivedBattles, Float killDeathRatio,
-            Float hitMissRatio, Float winLossRatio, Float totalAverageWn8,
+            Float hitMissRatio, Float winLossRatio, Float totalAverageWn8, Float recentAverageWn8,
             Float averageExperience, Float averageDamage, Float averageKills,
             Float averageDamageReceived, Float averageShots,
             Float averageStunAssistedDamage, Float averageCapturePoints,
@@ -168,6 +153,7 @@ public class PlayerStatisticsService {
         playerStatisticsSnapshot.setHitMissRatio(hitMissRatio);
         playerStatisticsSnapshot.setWinLossRatio(winLossRatio);
         playerStatisticsSnapshot.setTotalAverageWn8(totalAverageWn8);
+        playerStatisticsSnapshot.setRecentAverageWn8(recentAverageWn8);
         playerStatisticsSnapshot.setAverageExperience(averageExperience);
         playerStatisticsSnapshot.setAverageDamage(averageDamage);
         playerStatisticsSnapshot.setAverageKills(averageKills);
