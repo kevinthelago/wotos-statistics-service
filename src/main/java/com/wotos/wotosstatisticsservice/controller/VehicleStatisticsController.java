@@ -2,6 +2,7 @@ package com.wotos.wotosstatisticsservice.controller;
 
 import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.service.VehicleStatisticsService;
+import com.wotos.wotosstatisticsservice.validation.constraints.GameMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class VehicleStatisticsController {
     public ResponseEntity<Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>>> getPlayerVehicleStatisticsSnapshots(
             @RequestParam(value = "accountIds") Integer[] accountIds,
             @RequestParam(value = "vehicleIds", required = false) Integer[] vehicleIds,
-            @RequestParam(value = "gameModes", required = false) String[] gameModes
+            @RequestParam(value = "gameModes", required = false) @GameMode String[] gameModes
     ) {
         return new ResponseEntity<>(vehicleStatisticsService.getPlayerVehicleStatisticsSnapshotsMap(accountIds, vehicleIds, gameModes), HttpStatus.OK);
     }
