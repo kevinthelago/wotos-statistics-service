@@ -28,6 +28,8 @@ public class PlayerStatisticsSnapshot {
     private Float winLossRatio;
     @Column(name = "total_average_wn8", nullable = false)
     private Float totalAverageWn8;
+    @Column(name = "recent_average_wn8", nullable = false)
+    private Float recentAverageWn8;
     @Column(name = "average_experience", nullable = false)
     private Float averageExperience;
     @Column(name = "average_damage", nullable = false)
@@ -125,6 +127,14 @@ public class PlayerStatisticsSnapshot {
 
     public void setTotalAverageWn8(Float totalAverageWn8) {
         this.totalAverageWn8 = totalAverageWn8;
+    }
+
+    public Float getRecentAverageWn8() {
+        return recentAverageWn8;
+    }
+
+    public void setRecentAverageWn8(Float recentAverageWn8) {
+        this.recentAverageWn8 = recentAverageWn8;
     }
 
     public Float getAverageExperience() {

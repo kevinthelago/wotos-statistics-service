@@ -4,6 +4,7 @@ package com.wotos.wotosstatisticsservice.util.feign.wot;
 import com.wotos.wotosstatisticsservice.config.FeignConfig;
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotVehicleStatistics;
+import com.wotos.wotosstatisticsservice.validation.constraints.Language;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public interface WotPlayerVehiclesFeignClient {
             @RequestParam(value = "extra", required = false) String[] extra,
             @RequestParam(value = "fields", required = false) String[] fields,
             @RequestParam(value = "in_garage", required = false) @Min(0) @Max(1) Integer inGarage,
-            @RequestParam(value = "language", required = false, defaultValue = "en") String language,
+            @RequestParam(value = "language", required = false, defaultValue = "en") @Language String language,
             @RequestParam(value = "tank_id") Integer[] vehicleIds
     );
 
@@ -38,7 +39,7 @@ public interface WotPlayerVehiclesFeignClient {
             @RequestParam(value = "access_token") String accessToken,
             @RequestParam(value = "fields", required = false) String[] fields,
             @RequestParam(value = "in_garage", required = false) @Min(0) @Max(1) Integer inGarage,
-            @RequestParam(value = "language", required = false, defaultValue = "en") String language,
+            @RequestParam(value = "language", required = false, defaultValue = "en") @Language String language,
             @RequestParam(value = "tank_id") Integer[] vehicleIds
     );
 

@@ -21,6 +21,6 @@ public class GameModeValidator implements ConstraintValidator<GameMode, String[]
             }
         }
 
-        return false;
+        return true;
     }
 }

@@ -3,6 +3,7 @@ package com.wotos.wotosstatisticsservice.util.feign.wot;
 import com.wotos.wotosstatisticsservice.config.FeignConfig;
 import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
 import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
+import com.wotos.wotosstatisticsservice.validation.constraints.Language;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public interface WotAccountsFeignClient {
             @RequestParam(value = "access_token", required = false) String accessToken,
             @RequestParam(value = "extra", required = false) String[] extra,
             @RequestParam(value = "fields", required = false) String[] fields,
-            @RequestParam(value = "language", required = false, defaultValue = "en") String language,
+            @RequestParam(value = "language", required = false, defaultValue = "en") @Language String language,
             @RequestParam(value = "account_id") Integer[] accountIds
     );
 

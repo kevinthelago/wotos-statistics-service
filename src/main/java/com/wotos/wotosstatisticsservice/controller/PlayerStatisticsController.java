@@ -36,13 +36,4 @@ public class PlayerStatisticsController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/stats/recentWn8")
-    public ResponseEntity<Map<Integer, Map<String, Float>>> getPlayerRecentWn8(
-            @RequestParam(value = "accountIds") Integer[] accountIds,
-            @RequestParam(value = "gameModes") String[] gameModes,
-            @RequestParam(value = "timestamp") Long timestamp
-    ) {
-        return new ResponseEntity<>(playerStatisticsService.getPlayerRecentAverageWn8Map(accountIds, gameModes, timestamp), HttpStatus.FOUND);
-    }
-
 }
