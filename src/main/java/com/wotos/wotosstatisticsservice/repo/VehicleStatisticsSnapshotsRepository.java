@@ -5,13 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
 
 public interface VehicleStatisticsSnapshotsRepository extends JpaRepository<VehicleStatisticsSnapshot, Integer> {
 
-//    @Query(value = "select * from vehicle_statistics_snapshots where account_id in (:accountIds) and (vehicle_id in (:vehicleIds) or vehicle_id in (2961))", nativeQuery = true)
     List<VehicleStatisticsSnapshot> findAllByAccountIdInAndVehicleIdInAndGameModeIn(
             @Param("accountIds") Integer[] accountId,
             @Param("vehicleIds") Integer[] vehicleIds,
@@ -34,11 +35,17 @@ public interface VehicleStatisticsSnapshotsRepository extends JpaRepository<Vehi
             @Param("gameMode") String gameMode
     );
 
-    // ToDo: Validate this query is returning correct values
-    @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = ?1 AND game_mode = ?2", nativeQuery = true)
-    Optional<Float> averageAverageWn8ByGameModeAndAccountId(Integer accountId, String gameMode);
+    @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = :accountId AND game_mode = :gameMode", nativeQuery = true)
+    Optional<Float> averageAverageWn8ByGameModeAndAccountId(
+            @Param("accountId") Integer accountId,
+            @Param("gameMode") String gameMode
+    );
 
-    @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = ?1 AND game_mode = ?2 AND create_timestamp > ?3", nativeQuery = true)
-    Optional<Float> averageRecentAverageWn8ByGameModeAndAccountId(Integer accountId, String gameMode, Long timestamp);
+    @Query(value = "SELECT avg(average_wn8) FROM vehicle_statistics_snapshots where total_battles in (SELECT max(total_battles) FROM vehicle_statistics_snapshots group by vehicle_id) AND account_id = :accountId AND game_mode = :gameMode AND create_timestamp > :timestamp", nativeQuery = true)
+    Optional<Float> averageRecentAverageWn8ByGameModeAndAccountId(
+            @Param("accountId") Integer accountId,
+            @Param("gameMode") String gameMode,
+            @Param("timestamp") Long timestamp
+    );
 
 }

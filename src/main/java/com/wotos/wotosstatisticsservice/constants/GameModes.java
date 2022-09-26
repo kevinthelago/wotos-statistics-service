@@ -1,7 +1,5 @@
 package com.wotos.wotosstatisticsservice.constants;
 
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatistics;
-
 public enum GameModes {
     CLAN("clan"),
     ALL("all"),
