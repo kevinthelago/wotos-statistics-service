@@ -1,5 +1,6 @@
 package com.wotos.wotosstatisticsservice.controller;
 
+import com.wotos.wotosstatisticsservice.dao.PlayerStatistics;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.service.PlayerStatisticsService;
 import com.wotos.wotosstatisticsservice.validation.constraints.GameMode;
@@ -19,6 +20,13 @@ public class PlayerStatisticsController {
 
     @Autowired
     PlayerStatisticsService playerStatisticsService;
+
+    @GetMapping("/test")
+    public Map<Integer, PlayerStatistics> test(
+            @RequestParam(value = "accountIds") Integer[] accountIds
+    ) {
+        return playerStatisticsService.get(accountIds);
+    }
 
     @GetMapping("/stats/players")
     public ResponseEntity<Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>>> getPlayerStatisticsSnapshots(

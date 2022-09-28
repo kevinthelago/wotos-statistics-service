@@ -4,83 +4,76 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
 
-
 @Entity
-@Table(name = "vehicle_statistics_snapshots")
-public class VehicleStatisticsSnapshot {
+@Table(name = "statistics_snapshots")
+public class StatisticsSnapshot {
     @Id
     @GeneratedValue
-    @Column(name = "vehicle_statistics_snapshot_id")
-    private Integer vehicleStatisticsSnapshotId;
-    @Column(name = "account_id", nullable = false)
-    private Integer accountId;
-    @Column(name = "vehicle_id", nullable = false)
-    private Integer vehicleId;
-    @Column(name = "game_mode", nullable = false)
-    private String gameMode;
-    @Column(name = "create_timestamp", nullable = false)
+    @Column(name = "statistics_snapshot_id")
+    private Integer statisticsSnapshotId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_statistics_id")
+    @JsonBackReference(value = "vehicle-statistics_statistics-snapshots")
+    private VehicleStatistics vehicleStatistics;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_statistics_id")
+    @JsonBackReference(value = "player-statistics_statistics-snapshots")
+    private PlayerStatistics playerStatistics;
+    @Column(name = "create_timestamp")
     private Long createTimestamp;
-    @Column(name = "total_battles", nullable = false)
+    @Column(name = "total_battles")
     private Integer totalBattles;
-    @Column(name = "survived_battles", nullable = false)
+    @Column(name = "survived_battles")
     private Integer survivedBattles;
-    @Column(name = "kill_death_ratio", nullable = false)
+    @Column(name = "kill_death_ratio")
     private Float killDeathRatio;
-    @Column(name = "hit_miss_ratio", nullable = false)
+    @Column(name = "hit_miss_ratio")
     private Float hitMissRatio;
-    @Column(name = "win_loss_ratio", nullable = false)
+    @Column(name = "win_loss_ratio")
     private Float winLossRatio;
-    @Column(name = "average_wn8", nullable = false)
+    @Column(name = "average_wn8")
     private Float averageWn8;
-    @Column(name = "average_experience", nullable = false)
+    @Column(name = "average_experience")
     private Float averageExperience;
-    @Column(name = "average_damage", nullable = false)
+    @Column(name = "average_damage")
     private Float averageDamage;
-    @Column(name = "average_kills", nullable = false)
+    @Column(name = "average_kills")
     private Float averageKills;
-    @Column(name = "average_damage_received", nullable = false)
+    @Column(name = "average_damage_received")
     private Float averageDamageReceived;
-    @Column(name = "average_shots", nullable = false)
+    @Column(name = "average_shots")
     private Float averageShots;
-    @Column(name = "average_stun_assisted_damage", nullable = false)
+    @Column(name = "average_stun_assisted_damage")
     private Float averageStunAssistedDamage;
-    @Column(name = "average_capture_points", nullable = false)
+    @Column(name = "average_capture_points")
     private Float averageCapturePoints;
-    @Column(name = "dropped_capture_points", nullable = false)
+    @Column(name = "dropped_capture_points")
     private Float averageDroppedCapturePoints;
-    @Column(name = "average_spotting", nullable = false)
+    @Column(name = "average_spotting")
     private Float averageSpotting;
 
-    public Integer getVehicleStatisticsSnapshotId() {
-        return vehicleStatisticsSnapshotId;
+    public Integer getStatisticsSnapshotId() {
+        return statisticsSnapshotId;
     }
 
-    public void setVehicleStatisticsSnapshotId(Integer vehicleStatisticsSnapshotId) {
-        this.vehicleStatisticsSnapshotId = vehicleStatisticsSnapshotId;
+    public void setStatisticsSnapshotId(Integer statisticsSnapshotId) {
+        this.statisticsSnapshotId = statisticsSnapshotId;
     }
 
-    public Integer getAccountId() {
-        return accountId;
+    public VehicleStatistics getVehicleStatistics() {
+        return vehicleStatistics;
     }
 
-    public void setAccountId(Integer accountId) {
-        this.accountId = accountId;
+    public void setVehicleStatistics(VehicleStatistics vehicleStatistics) {
+        this.vehicleStatistics = vehicleStatistics;
     }
 
-    public Integer getVehicleId() {
-        return vehicleId;
+    public PlayerStatistics getPlayerStatistics() {
+        return playerStatistics;
     }
 
-    public void setVehicleId(Integer vehicleId) {
-        this.vehicleId = vehicleId;
-    }
-
-    public String getGameMode() {
-        return gameMode;
-    }
-
-    public void setGameMode(String gameMode) {
-        this.gameMode = gameMode;
+    public void setPlayerStatistics(PlayerStatistics playerStatistics) {
+        this.playerStatistics = playerStatistics;
     }
 
     public Long getCreateTimestamp() {

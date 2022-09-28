@@ -2,6 +2,7 @@ package com.wotos.wotosstatisticsservice.service;
 
 import com.sun.istack.NotNull;
 import com.wotos.wotosstatisticsservice.dao.ExpectedStatistics;
+import com.wotos.wotosstatisticsservice.dao.VehicleStatistics;
 import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.repo.ExpectedStatisticsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 import javax.naming.directory.NoSuchAttributeException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 public class VehicleStatisticsService {
@@ -59,12 +63,56 @@ public class VehicleStatisticsService {
         return vehicleStatisticsSnapshotsRepository.findAllPlayerVehicleStatisticsMapByAccountId(accountIds, vehicleIds, gameModes);
     }
 
+    // ToDo: Memory intense operation needs to be simplified
     public Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> createPlayerVehicleStatisticsSnapshots(Integer[] accountIds, Integer[] vehicleIds) {
-        Map<Integer, List<WotVehicleStatistics>> wotVehicleStatisticsMap = fetchWotVehicleStatistics(accountIds, vehicleIds);
+        Map<Integer, List<WotVehicleStatistics>> wotPlayerVehiclesStatisticsMap = fetchWotVehicleStatistics(accountIds, vehicleIds);
+
+//        wotPlayerVehiclesStatisticsMap.forEach((accountId, wotVehicleStatisticsList) -> {
+//            List<VehicleStatisticsSnapshot> test = wotVehicleStatisticsList.stream().map(wotVehicleStatistics -> {
+//                Map<String, WotStatistics> wotStatisticsByGameModeMap = buildWotVehicleStatisticsByGameModeMap(wotVehicleStatistics);
+//                Integer vehicleId = wotVehicleStatistics.getVehicleId();
+//
+//                wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
+//                    if (wotStatisticsByGameMode != null) {
+//                        Integer maxBattles = vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(accountId, vehicleId, gameMode).orElse(0);
+//
+//                        if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
+//                            ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
+//                            VehicleStatisticsSnapshot vehicleStatisticsSnapshot = calculateVehicleStatisticsSnapshot(
+//                                    accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
+//                            );
+//
+//                            vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot);
+//                            return vehicleStatisticsSnapshot;
+//                        }
+//                    }
+//                });
+//            }).collect(Collectors.toList());
+////            wotVehicleStatisticsList.forEach(wotVehicleStatistics -> {
+////                Map<String, WotStatistics> wotStatisticsByGameModeMap = buildWotVehicleStatisticsByGameModeMap(wotVehicleStatistics);
+////                Integer vehicleId = wotVehicleStatistics.getVehicleId();
+////
+////                wotStatisticsByGameModeMap.forEach((gameMode, wotStatisticsByGameMode) -> {
+////                    if (wotStatisticsByGameMode != null) {
+////                        Integer maxBattles = vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(accountId, vehicleId, gameMode).orElse(0);
+////
+////                        if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
+////                            ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
+////                            VehicleStatisticsSnapshot vehicleStatisticsSnapshot = calculateVehicleStatisticsSnapshot(
+////                                    accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
+////                            );
+////
+////                            vehicleStatisticsSnapshotsRepository.save(vehicleStatisticsSnapshot);
+////                        }
+////                    }
+////                });
+////            })
+//        });
+
         Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMapByPlayer = new HashMap<>();
 
         for (Integer accountId : accountIds) {
-            List<WotVehicleStatistics> wotVehicleStatisticsList = wotVehicleStatisticsMap.get(accountId);
+            List<WotVehicleStatistics> wotVehicleStatisticsList = wotPlayerVehiclesStatisticsMap.get(accountId);
             Map<Integer, Map<String, VehicleStatisticsSnapshot>> vehicleStatisticsSnapshotsMapByVehicle = new HashMap<>();
 
             for (WotVehicleStatistics wotVehicleStatistics : wotVehicleStatisticsList) {
@@ -97,7 +145,7 @@ public class VehicleStatisticsService {
         return vehicleStatisticsSnapshotsMapByPlayer;
     }
 
-    private static Map<String, WotStatistics> buildWotVehicleStatisticsByGameModeMap(WotVehicleStatistics wotVehicleStatistics) {
+    private Map<String, WotStatistics> buildWotVehicleStatisticsByGameModeMap(WotVehicleStatistics wotVehicleStatistics) {
         Map<String, WotStatistics> vehicleStatisticsByGameModeMap = new HashMap<>();
 
         vehicleStatisticsByGameModeMap.put("regular_team", wotVehicleStatistics.getRegularTeam());
