@@ -1,4 +1,4 @@
-package com.wotos.wotosstatisticsservice.util.model.wot;
+package com.wotos.wotosstatisticsservice.client.wot;
 
 import org.springframework.lang.Nullable;
 

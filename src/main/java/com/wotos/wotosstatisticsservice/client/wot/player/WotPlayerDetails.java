@@ -1,7 +1,7 @@
-package com.wotos.wotosstatisticsservice.util.model.wot.player;
+package com.wotos.wotosstatisticsservice.client.wot.player;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotPlayerStatistics;
+import com.wotos.wotosstatisticsservice.client.wot.statistics.WotPlayerStatistics;
 
 public class WotPlayerDetails {
 

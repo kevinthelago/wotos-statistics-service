@@ -1,4 +1,4 @@
-package com.wotos.wotosstatisticsservice.util.model.xvm;
+package com.wotos.wotosstatisticsservice.client.xvm.xvm;
 
 import java.util.Map;
 

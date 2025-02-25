@@ -1,7 +1,7 @@
-package com.wotos.wotosstatisticsservice.util.feign.xvm;
+package com.wotos.wotosstatisticsservice.client.xvm;
 
-import com.wotos.wotosstatisticsservice.util.model.xvm.XvmApiResponse;
-import com.wotos.wotosstatisticsservice.util.model.xvm.XvmExpectedStatistics;
+import com.wotos.wotosstatisticsservice.client.xvm.xvm.XvmApiResponse;
+import com.wotos.wotosstatisticsservice.client.xvm.xvm.XvmExpectedStatistics;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

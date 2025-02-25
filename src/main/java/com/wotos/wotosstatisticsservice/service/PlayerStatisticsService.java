@@ -4,10 +4,10 @@ import com.sun.istack.NotNull;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.repo.PlayerStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
-import com.wotos.wotosstatisticsservice.util.feign.wot.WotAccountsFeignClient;
-import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotPlayerStatistics;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatistics;
+import com.wotos.wotosstatisticsservice.client.wot.WotAccountsFeignClient;
+import com.wotos.wotosstatisticsservice.client.wot.player.WotPlayerDetails;
+import com.wotos.wotosstatisticsservice.client.wot.statistics.WotPlayerStatistics;
+import com.wotos.wotosstatisticsservice.client.wot.statistics.WotStatistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

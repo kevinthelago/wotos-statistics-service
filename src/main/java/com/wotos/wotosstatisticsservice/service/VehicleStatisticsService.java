@@ -5,15 +5,14 @@ import com.wotos.wotosstatisticsservice.dao.ExpectedStatistics;
 import com.wotos.wotosstatisticsservice.dao.VehicleStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.repo.ExpectedStatisticsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
-import com.wotos.wotosstatisticsservice.util.feign.wot.WotPlayerVehiclesFeignClient;
-import com.wotos.wotosstatisticsservice.util.feign.xvm.XvmExpectedStatisticsFeignClient;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotStatistics;
-import com.wotos.wotosstatisticsservice.util.model.wot.statistics.WotVehicleStatistics;
-import com.wotos.wotosstatisticsservice.util.model.xvm.XvmExpectedStatistics;
+import com.wotos.wotosstatisticsservice.client.wot.WotPlayerVehiclesFeignClient;
+import com.wotos.wotosstatisticsservice.client.xvm.XvmExpectedStatisticsFeignClient;
+import com.wotos.wotosstatisticsservice.client.wot.statistics.WotStatistics;
+import com.wotos.wotosstatisticsservice.client.wot.statistics.WotVehicleStatistics;
+import com.wotos.wotosstatisticsservice.client.xvm.xvm.XvmExpectedStatistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.naming.directory.NoSuchAttributeException;
 import java.time.Instant;
 import java.util.*;
 

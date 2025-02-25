@@ -1,4 +1,4 @@
-package com.wotos.wotosstatisticsservice.util.model.wot.statistics;
+package com.wotos.wotosstatisticsservice.client.wot.statistics;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,8 +1,7 @@
-package com.wotos.wotosstatisticsservice.util.feign.wot;
+package com.wotos.wotosstatisticsservice.client.wot;
 
 import com.wotos.wotosstatisticsservice.config.FeignConfig;
-import com.wotos.wotosstatisticsservice.util.model.wot.WotApiResponse;
-import com.wotos.wotosstatisticsservice.util.model.wot.player.WotPlayerDetails;
+import com.wotos.wotosstatisticsservice.client.wot.player.WotPlayerDetails;
 import com.wotos.wotosstatisticsservice.validation.constraints.Language;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
