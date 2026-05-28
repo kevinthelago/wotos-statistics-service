@@ -28,6 +28,7 @@ env:
   app_id: ""
   snapshot_rate: 0
   recent_wn8_timestamp: 0
+  jwt_secret: "wotos-test-only-jwt-secret-min-256-bits-for-hs256-algorithm-padding"
   urls:
     world_of_tanks_api: "http://localhost"
     xvm_expected_statistics: "http://localhost"
