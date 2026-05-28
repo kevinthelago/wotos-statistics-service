@@ -1,6 +1,6 @@
 package com.wotos.wotosstatisticsservice.dao;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 
 @Entity

@@ -136,7 +136,7 @@ public class VehicleStatisticsServiceTest {
         Integer[] accountIds = {1};
         Integer[] vehicleIds = {1,2,3};
 
-        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics("", accountIds, "", null, null, null, "", vehicleIds)).thenReturn(wotResponseEntity);
+        when(wotPlayerVehiclesFeignClient.getPlayerVehicleStatistics(eq(""), eq(accountIds), eq(""), any(), any(), any(), eq("en"), eq(vehicleIds))).thenReturn(wotResponseEntity);
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all")).thenReturn(Optional.of(100));
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all")).thenReturn(Optional.of(100));
         when(vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all")).thenReturn(Optional.of(100));
@@ -146,7 +146,7 @@ public class VehicleStatisticsServiceTest {
 
         Map<Integer, Map<Integer, Map<String, VehicleStatisticsSnapshot>>> vehicleStatisticsSnapshotsMap = vehicleStatisticsService.createPlayerVehicleStatisticsSnapshots(accountIds, vehicleIds);
 
-        verify(wotPlayerVehiclesFeignClient, times(1)).getPlayerVehicleStatistics("", accountIds, "", null, null, null, "", vehicleIds);
+        verify(wotPlayerVehiclesFeignClient, times(1)).getPlayerVehicleStatistics(eq(""), eq(accountIds), eq(""), any(), any(), any(), eq("en"), eq(vehicleIds));
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 1, "all");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 2, "all");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndVehicleId(1, 3, "all");

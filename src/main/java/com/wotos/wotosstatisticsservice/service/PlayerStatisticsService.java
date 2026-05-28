@@ -1,6 +1,6 @@
 package com.wotos.wotosstatisticsservice.service;
 
-import com.sun.istack.NotNull;
+import org.jetbrains.annotations.NotNull;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
 import com.wotos.wotosstatisticsservice.repo.PlayerStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;

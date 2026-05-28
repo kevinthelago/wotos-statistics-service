@@ -3,8 +3,8 @@ package com.wotos.wotosstatisticsservice.validation;
 import com.wotos.wotosstatisticsservice.constants.GameModes;
 import com.wotos.wotosstatisticsservice.validation.constraints.GameMode;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.EnumSet;
 
 public class GameModeValidator implements ConstraintValidator<GameMode, String[]> {
