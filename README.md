@@ -14,7 +14,7 @@ Microservice in the [WoToS](https://github.com/users/kevinthelago/projects/2) sy
 
 ## Prerequisites
 
-- Java 8 (Temurin recommended)
+- Java 17 (Temurin recommended)
 - Maven or the included `./mvnw` wrapper
 - MySQL 8 running at `localhost:3306`, user `root`, password `root`
 - Database `wotos_statistics_database` (created automatically by Hibernate on first run)

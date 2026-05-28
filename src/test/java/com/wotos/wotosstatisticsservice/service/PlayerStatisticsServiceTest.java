@@ -100,7 +100,7 @@ public class PlayerStatisticsServiceTest {
 
         WotApiResponse<Map<Integer, WotPlayerDetails>> wotApiResponsePlayer1 = new WotApiResponse<>("", "", "", wotPlayerDetailsMapPlayer1);
         ResponseEntity<WotApiResponse<Map<Integer, WotPlayerDetails>>> wotResponseEntityPlayer1 = new ResponseEntity<>(wotApiResponsePlayer1, HttpStatus.OK);
-        when(wotAccountsFeignClient.getPlayerDetails("", "", null, null, "", accountIds)).thenReturn(wotResponseEntityPlayer1);
+        when(wotAccountsFeignClient.getPlayerDetails(eq(""), eq(""), any(), any(), eq("en"), eq(accountIds))).thenReturn(wotResponseEntityPlayer1);
 
         when(playerStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndGameMode(1, "all")).thenReturn(Optional.of(0));
         when(vehicleStatisticsSnapshotsRepository.averageAverageWn8ByGameModeAndAccountId(1, "all")).thenReturn(Optional.of(1592.67f));
@@ -129,7 +129,7 @@ public class PlayerStatisticsServiceTest {
 
         Map<Integer, Map<String, PlayerStatisticsSnapshot>> playerStatisticsSnapshotsMap = playerStatisticsService.createPlayerStatisticsSnapshotsByAccountIds(accountIds);
 
-        verify(wotAccountsFeignClient, times(1)).getPlayerDetails("", "", null, null, "", accountIds);
+        verify(wotAccountsFeignClient, times(1)).getPlayerDetails(eq(""), eq(""), any(), any(), eq("en"), eq(accountIds));
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "all");
         verify(playerStatisticsSnapshotsRepository, times(1)).findHighestTotalBattlesByAccountIdAndGameMode(1, "clan");
         verify(vehicleStatisticsSnapshotsRepository, times(1)).averageAverageWn8ByGameModeAndAccountId(1, "all");

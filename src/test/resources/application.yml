@@ -1,10 +1,11 @@
 spring:
-#  autoconfigure:
-#    exclude:
-#      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration, \
-#      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration, \
-#      org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+  config:
+    # Spring Cloud Config (2020.0+) requires an explicit import; make it optional so
+    # tests boot without a running config server.
+    import: "optional:configserver:"
   cloud:
+    config:
+      enabled: false
     discovery:
       enabled: false
   jpa:
@@ -12,16 +13,21 @@ spring:
     generate-ddl: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
   datasource:
-    url: jdbc:mysql://localhost:3306/wotos_statistics_test_database?useSSL=false
+    url: "jdbc:mysql://localhost:3306/wotos_statistics_test_database?useSSL=false&allowPublicKeyRetrieval=true"
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+eureka:
+  client:
+    enabled: false
+
 env:
   app_id: ""
   snapshot_rate: 0
+  recent_wn8_timestamp: 0
   urls:
-    world_of_tanks_api: ""
-    xvm_expected_statistics: ""
+    world_of_tanks_api: "http://localhost"
+    xvm_expected_statistics: "http://localhost"
