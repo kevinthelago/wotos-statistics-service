@@ -16,6 +16,9 @@ public class PlayerStatisticsSnapshot {
     private String gameMode;
     @Column(name = "create_timestamp", nullable = false)
     private Long createTimestamp;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "granularity")
+    private Granularity granularity;
     @Column(name = "total_battles", nullable = false)
     private Integer totalBattles;
     @Column(name = "survived_battles", nullable = false)
@@ -79,6 +82,14 @@ public class PlayerStatisticsSnapshot {
 
     public void setCreateTimestamp(Long createTimestamp) {
         this.createTimestamp = createTimestamp;
+    }
+
+    public Granularity getGranularity() {
+        return granularity;
+    }
+
+    public void setGranularity(Granularity granularity) {
+        this.granularity = granularity;
     }
 
     public Integer getTotalBattles() {
