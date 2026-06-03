@@ -15,6 +15,14 @@ public interface PlayerStatisticsSnapshotsRepository extends JpaRepository<Playe
 
     List<PlayerStatisticsSnapshot> findAllByAccountIdInAndGameModeIn(Integer[] accountId, String[] gameMode);
 
+    /**
+     * Snapshots for one account and game mode whose {@code create_timestamp} (epoch
+     * seconds) falls within {@code [from, to]}, ordered oldest-first. Backs the WN8
+     * trend endpoint.
+     */
+    List<PlayerStatisticsSnapshot> findAllByAccountIdAndGameModeAndCreateTimestampBetweenOrderByCreateTimestampAsc(
+            Integer accountId, String gameMode, Long from, Long to);
+
     default Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsMap(Integer[] accountIds, String[] gameMode) {
         return findAllByAccountIdInAndGameModeIn(accountIds, gameMode).stream()
                 .collect(

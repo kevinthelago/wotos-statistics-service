@@ -50,6 +50,17 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), message));
     }
 
+    /**
+     * Maps invalid request arguments (e.g. an unsupported {@code bucket} value on the
+     * trend endpoint) to a 400 rather than letting them fall through to a 500.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ErrorResponse> handleFeign(FeignException ex) {
         return ResponseEntity

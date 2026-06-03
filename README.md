@@ -58,6 +58,7 @@ Tests require MySQL running locally. The test database is `wotos_statistics_test
 |--------|------|-------------|
 | `GET` | `/api/stats/players` | Get player statistics snapshots |
 | `POST` | `/api/stats/players` | Create new player statistics snapshots |
+| `GET` | `/api/stats/players/{accountId}/trend` | Get a player's overall WN8 trend over time |
 | `GET` | `/api/stats/vehicles` | Get vehicle statistics snapshots |
 | `POST` | `/api/stats/vehicles` | Create new vehicle statistics snapshots |
 
@@ -68,6 +69,37 @@ Tests require MySQL running locally. The test database is `wotos_statistics_test
 | `accountIds` | `Integer[]` | all | WoT account IDs |
 | `gameModes` | `String[]` | GET players/vehicles | Game modes to include (e.g. `random`, `ranked_battles`) |
 | `vehicleIds` | `Integer[]` | vehicle endpoints | Filter by vehicle |
+
+### Trend endpoint
+
+`GET /api/stats/players/{accountId}/trend?from&to&bucket`
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `from` | ISO date `yyyy-MM-dd` (UTC) | 90 days before `to` | Inclusive start of the range |
+| `to` | ISO date `yyyy-MM-dd` (UTC) | today | Inclusive end of the range |
+| `bucket` | `day` \| `week` | `day` | Time bucket granularity |
+
+The response's `points[].t` is an ISO-8601 UTC instant (the bucket start):
+
+```json
+{ "accountId": 123, "bucket": "day",
+  "points": [ { "t": "2026-03-02T00:00:00Z", "wn8": 1565.0, "battles": 10421 } ] }
+```
+
+An unsupported `bucket` returns `400` with the standard error envelope.
+
+## Snapshot retention
+
+A scheduled job (`SnapshotRetentionService`, daily at 04:00) collapses the snapshot
+time-series so it does not grow without bound: the last 30 days stay daily, up to one
+year is thinned to weekly, and older data to monthly (kept forever). Each surviving
+row records its `granularity`. To thin pre-existing historical data once, start the
+service under the `backfill` profile:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=backfill
+```
 
 ## Swagger UI
 

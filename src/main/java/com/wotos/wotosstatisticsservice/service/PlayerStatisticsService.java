@@ -1,7 +1,11 @@
 package com.wotos.wotosstatisticsservice.service;
 
 import org.jetbrains.annotations.NotNull;
+import com.wotos.wotosstatisticsservice.dao.Granularity;
 import com.wotos.wotosstatisticsservice.dao.PlayerStatisticsSnapshot;
+import com.wotos.wotosstatisticsservice.dto.PlayerTrendResponse;
+import com.wotos.wotosstatisticsservice.dto.TrendBucket;
+import com.wotos.wotosstatisticsservice.dto.TrendPoint;
 import com.wotos.wotosstatisticsservice.repo.PlayerStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.repo.VehicleStatisticsSnapshotsRepository;
 import com.wotos.wotosstatisticsservice.client.wot.WotAccountsFeignClient;
@@ -11,8 +15,14 @@ import com.wotos.wotosstatisticsservice.client.wot.statistics.WotStatistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlayerStatisticsService {
@@ -41,8 +51,65 @@ public class PlayerStatisticsService {
         this.playerStatisticsSnapshotsRepository = playerStatisticsSnapshotsRepository;
     }
 
+    /** Overall game mode used as the single WN8 series for the trend endpoint. */
+    private static final String TREND_GAME_MODE = "all";
+    /** Default trend window when {@code from} is not supplied (last 90 days). */
+    private static final int DEFAULT_TREND_DAYS = 90;
+
     public Map<Integer, Map<String, List<PlayerStatisticsSnapshot>>> getPlayerStatisticsSnapshotsMap(Integer[] accountIds, String[] gameModes) {
         return playerStatisticsSnapshotsRepository.getPlayerStatisticsMap(accountIds, gameModes);
+    }
+
+    /**
+     * Builds the player's overall WN8 trend over a date range, collapsing snapshots
+     * into day or week buckets (keeping the latest snapshot in each bucket).
+     *
+     * @param accountId  the WoT account
+     * @param from       inclusive start date (UTC); defaults to {@code to} minus 90 days when null
+     * @param to         inclusive end date (UTC); defaults to today (UTC) when null
+     * @param bucketParam {@code "day"} or {@code "week"}; defaults to day
+     * @return the trend with points ordered oldest-first and {@code t} as ISO-8601 UTC
+     * @throws IllegalArgumentException if {@code bucketParam} is not a valid bucket
+     */
+    public PlayerTrendResponse getPlayerWn8Trend(Integer accountId, LocalDate from, LocalDate to, String bucketParam) {
+        TrendBucket bucket = TrendBucket.from(bucketParam);
+
+        LocalDate toDate = (to != null) ? to : LocalDate.now(ZoneOffset.UTC);
+        LocalDate fromDate = (from != null) ? from : toDate.minusDays(DEFAULT_TREND_DAYS);
+
+        long fromEpoch = fromDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        long toEpoch = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond() - 1;
+
+        List<PlayerStatisticsSnapshot> snapshots = playerStatisticsSnapshotsRepository
+                .findAllByAccountIdAndGameModeAndCreateTimestampBetweenOrderByCreateTimestampAsc(
+                        accountId, TREND_GAME_MODE, fromEpoch, toEpoch);
+
+        // Collapse to the latest snapshot per bucket so each bucket yields one point.
+        Map<Instant, PlayerStatisticsSnapshot> latestByBucket = new HashMap<>();
+        for (PlayerStatisticsSnapshot snapshot : snapshots) {
+            Instant bucketStart = bucketStart(snapshot.getCreateTimestamp(), bucket);
+            latestByBucket.merge(bucketStart, snapshot,
+                    (existing, candidate) -> candidate.getCreateTimestamp() >= existing.getCreateTimestamp() ? candidate : existing);
+        }
+
+        List<TrendPoint> points = latestByBucket.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new TrendPoint(
+                        DateTimeFormatter.ISO_INSTANT.format(entry.getKey()),
+                        entry.getValue().getTotalAverageWn8(),
+                        entry.getValue().getTotalBattles()))
+                .collect(Collectors.toList());
+
+        return new PlayerTrendResponse(accountId, bucket.label(), points);
+    }
+
+    /** Start instant (UTC) of the day- or week-bucket containing {@code epochSecond}. */
+    private static Instant bucketStart(long epochSecond, TrendBucket bucket) {
+        LocalDate date = Instant.ofEpochSecond(epochSecond).atZone(ZoneOffset.UTC).toLocalDate();
+        LocalDate bucketDate = (bucket == TrendBucket.WEEK)
+                ? date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                : date;
+        return bucketDate.atStartOfDay(ZoneOffset.UTC).toInstant();
     }
 
     public Map<Integer, Map<String, PlayerStatisticsSnapshot>> createPlayerStatisticsSnapshotsByAccountIds(Integer[] accountIds) {
@@ -147,6 +214,7 @@ public class PlayerStatisticsService {
         playerStatisticsSnapshot.setAccountId(accountId);
         playerStatisticsSnapshot.setGameMode(gameMode);
         playerStatisticsSnapshot.setCreateTimestamp(Instant.now().getEpochSecond());
+        playerStatisticsSnapshot.setGranularity(Granularity.DAILY);
         playerStatisticsSnapshot.setTotalBattles(totalBattles);
         playerStatisticsSnapshot.setSurvivedBattles(survivedBattles);
         playerStatisticsSnapshot.setKillDeathRatio(killDeathRatio);
