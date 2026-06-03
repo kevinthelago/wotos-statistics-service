@@ -30,6 +30,8 @@ public class VehicleStatisticsService {
     private final VehicleStatisticsSnapshotsRepository vehicleStatisticsSnapshotsRepository;
     private final ExpectedStatisticsRepository expectedStatisticsRepository;
 
+    private final Wn8Calculator wn8Calculator;
+
 //    @PostConstruct
     public void init() {
         List<ExpectedStatistics> expectedStatistics = expectedStatisticsRepository.findAll();
@@ -45,13 +47,17 @@ public class VehicleStatisticsService {
             XvmExpectedStatisticsFeignClient xvmExpectedStatisticsFeignClient,
 
             VehicleStatisticsSnapshotsRepository vehicleStatisticsSnapshotsRepository,
-            ExpectedStatisticsRepository expectedStatisticsRepository
+            ExpectedStatisticsRepository expectedStatisticsRepository,
+
+            Wn8Calculator wn8Calculator
     ) {
         this.wotPlayerVehiclesFeignClient = wotPlayerVehiclesFeignClient;
         this.xvmExpectedStatisticsFeignClient = xvmExpectedStatisticsFeignClient;
 
         this.vehicleStatisticsSnapshotsRepository = vehicleStatisticsSnapshotsRepository;
         this.expectedStatisticsRepository = expectedStatisticsRepository;
+
+        this.wn8Calculator = wn8Calculator;
     }
 
     public Map<Integer, Map<Integer, Map<String, List<VehicleStatisticsSnapshot>>>> getPlayerVehicleStatisticsSnapshotsMap(Integer[] accountIds, Integer[] vehicleIds, String[] gameModes) {
@@ -76,9 +82,17 @@ public class VehicleStatisticsService {
                         Integer maxBattles = vehicleStatisticsSnapshotsRepository.findHighestTotalBattlesByAccountIdAndVehicleId(accountId, vehicleId, gameMode).orElse(0);
 
                         if (wotStatisticsByGameMode.getBattles() - maxBattles > SNAPSHOT_RATE) {
-                            ExpectedStatistics expectedStatistics = expectedStatisticsRepository.findById(vehicleId).get();
-                            VehicleStatisticsSnapshot vehicleStatisticsSnapshot = calculateVehicleStatisticsSnapshot(
-                                    accountId, vehicleId, gameMode, wotStatisticsByGameMode, expectedStatistics
+                            // XVM may not publish expected statistics for every vehicle (new or
+                            // removed tanks). Exclude such a vehicle from the snapshot rather than
+                            // throwing — WN8 cannot be computed without expected values.
+                            Optional<ExpectedStatistics> expectedStatistics = expectedStatisticsRepository.findById(vehicleId);
+                            if (expectedStatistics.isEmpty()) {
+                                return;
+                            }
+
+                            float wn8 = wn8Calculator.calculateWn8(wotStatisticsByGameMode, expectedStatistics.get());
+                            VehicleStatisticsSnapshot vehicleStatisticsSnapshot = buildVehicleStatisticsSnapshotFromRaw(
+                                    accountId, vehicleId, gameMode, wn8, wotStatisticsByGameMode
                             );
 
                             vehicleStatisticsSnapshotsByGameMode.put(gameMode, vehicleStatisticsSnapshot);
@@ -114,12 +128,15 @@ public class VehicleStatisticsService {
         return vehicleStatisticsByGameModeMap;
     }
 
-    private static VehicleStatisticsSnapshot calculateVehicleStatisticsSnapshot(
+    /**
+     * Builds a vehicle snapshot from raw WoT statistics and a pre-computed WN8
+     * rating (see {@link Wn8Calculator}). Derives the per-battle averages stored on
+     * the snapshot but does not itself compute WN8.
+     */
+    private static VehicleStatisticsSnapshot buildVehicleStatisticsSnapshotFromRaw(
             @NotNull Integer accountId, @NotNull Integer vehicleId, @NotNull String gameMode,
-            @NotNull WotStatistics wotStatistics,
-            @NotNull ExpectedStatistics expectedStatistics
+            float wn8, @NotNull WotStatistics wotStatistics
     ) {
-        float wins = wotStatistics.getWins();
         float battles = wotStatistics.getBattles();
         float survivedBattles = wotStatistics.getSurvivedBattles();
         float frags = wotStatistics.getFrags();
@@ -132,6 +149,7 @@ public class VehicleStatisticsService {
         float shots = wotStatistics.getShots();
         float stunAssistedDamage = wotStatistics.getStunAssistedDamage();
         float capturePoints = wotStatistics.getCapturePoints();
+        float wins = wotStatistics.getWins();
 
         float winLossRatio = wins / battles;
         float deaths = battles - survivedBattles == 0 ? 1 : battles - survivedBattles;
@@ -146,22 +164,6 @@ public class VehicleStatisticsService {
         float averageStunAssistedDamage = stunAssistedDamage / battles;
         float averageCapturePointsPerGame = capturePoints / battles;
         float averageDroppedCapturePoints = dropperCapturePoints / battles;
-
-        float tune = 10000;
-
-        float DAMAGE = Math.round((averageDamagePerGame / expectedStatistics.getExpectedDamage()) * tune) / tune;
-        float SPOT = Math.round((averageSpottingPerGame / expectedStatistics.getExpectedSpot()) * tune) / tune;
-        float FRAG = Math.round((averageKillsPerGame / expectedStatistics.getExpectedFrag()) * tune) / tune;
-        float DEFENSE = Math.round(((averageDroppedCapturePoints) / expectedStatistics.getExpectedDefense()) * tune) / tune;
-        float WIN = Math.round((winLossRatio / expectedStatistics.getExpectedWinRate()) * (tune * 100)) / tune;
-
-        float DAMAGEc = (float) Math.max(0, (DAMAGE - 0.22) / 0.78);
-        float SPOTc = (float) Math.max(0, Math.min(DAMAGEc + 0.1, (SPOT - 0.38) / 0.62));
-        float FRAGc = (float) Math.max(0, Math.min(DAMAGEc + 0.2, (FRAG - 0.12) / 0.88));
-        float DEFENSEc = (float) Math.max(0, Math.min(DAMAGEc + 0.1, (DEFENSE - 0.10) / 0.9));
-        float WINc = (float) Math.max(0, (WIN - 0.71) / 0.29);
-
-        float wn8 = (float) ((980 * DAMAGEc) + (210 * DAMAGEc * FRAGc) + (155 * FRAGc * SPOTc) + (75 * DEFENSEc * FRAGc) + (145 * Math.min(1.8, WINc)));
 
         return buildVehicleStatisticsSnapshot(
                 accountId, vehicleId, gameMode, wn8, (int) battles, killDeathRatio, hitMissRatio, winLossRatio,
